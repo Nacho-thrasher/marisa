@@ -65,15 +65,20 @@ productos con listas de precios, recetas, vendedores y configuración de aportes
 sin datos demo (clientes, empleados, ventas, nómina):
 
 ```bash
-cd backend
 # Definí el admin por entorno (en Railway → Variables):
 #   ADMIN_USERNAME, ADMIN_EMAIL, ADMIN_PASSWORD
-npm run seed:reset -- --force      # ⚠️ BORRA todos los datos
+
+# En Railway (usa el seed compilado, no requiere tsx):
+railway run npm run seed:reset:prod -- --force   # ⚠️ BORRA todos los datos
+
+# En local (con tsx):
+cd backend && npm run seed:reset -- --force
 ```
 
 El script es **destructivo** y exige `--force` (o `CONFIRM_RESET=YES`) para ejecutarse,
 de modo que nunca corre solo en un deploy. Si no se definen las variables, usa
-`admin / Admin123!` como fallback (cambiala en el primer ingreso).
+`admin / Admin123!` como fallback (cambiala en el primer ingreso). Ver
+[docs/DESPLIEGUE.md](docs/DESPLIEGUE.md) para el detalle.
 
 ## Estado del desarrollo
 

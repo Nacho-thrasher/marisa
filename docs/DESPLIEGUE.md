@@ -18,8 +18,36 @@
 
 4. El `startCommand` (`prisma migrate deploy && node dist/server.js`) corre las
    migraciones automáticamente en cada deploy.
-5. Para cargar datos demo una vez: `railway run npm run seed` (o desde la consola del servicio).
-6. Healthcheck: `GET /api/v1/health`.
+5. Healthcheck: `GET /api/v1/health`.
+
+### Arranque limpio de producción (1 admin + catálogo)
+
+Para dejar la base lista para usar (un único administrador + catálogo de insumos,
+productos con listas de precios, recetas, vendedores y config de aportes), **sin**
+datos demo de clientes/empleados/ventas/nómina:
+
+1. En Railway → servicio backend → **Variables**, agregar:
+
+   | Variable | Valor |
+   |----------|-------|
+   | `ADMIN_USERNAME` | usuario del admin (ej. `admin`) |
+   | `ADMIN_EMAIL` | email del admin |
+   | `ADMIN_PASSWORD` | contraseña inicial (cambiala al primer ingreso) |
+
+2. Ejecutar **una sola vez** el reset (es destructivo, exige confirmación):
+
+   ```bash
+   railway run npm run seed:reset:prod -- --force
+   ```
+
+   > El comando usa el seed **compilado** (`node dist/prisma/seed.prod.js`), no
+   > necesita `tsx`. Requiere `--force` (o la variable `CONFIRM_RESET=YES`) para correr.
+
+3. Listo: entrar a la app con el admin y crear el resto de los usuarios desde
+   **Administración → Usuarios**.
+
+> ⚠️ `seed:reset:prod` **borra todos los datos**. Para sólo cargar datos demo en un
+> entorno de prueba, usar `railway run npm run seed` en su lugar.
 
 ## 2. Frontend en Vercel
 
