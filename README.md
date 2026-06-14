@@ -61,6 +61,12 @@ npm start                   # http://localhost:4200
 - [x] Módulo de Ventas (remitos, márgenes, anulación)
 - [x] Módulo de Nómina (empleados, estructura salarial, liquidación con AFIP y antigüedad, recibos, aportes)
 - [x] Módulo de Auditoría (logs trazables por usuario/módulo/acción)
+- [x] Listas de precios diferenciadas (Mayorista/Revendedor/Comercio/Público) por producto
+- [x] Clientes con zona de venta + Vendedores; venta atribuida a cliente/vendedor
+- [x] Reporte mensual de ventas por vendedor y matriz producto×vendedor (planilla "MENSUAL")
+- [x] Simulador de costo para productos nuevos; lote + vencimiento en producción
+- [x] Dashboard con KPIs por rol, alertas de stock, top vendedores y órdenes recientes
 - [ ] Reportes exportables a PDF/Excel (pendiente)
+- [ ] Carga de pedido diario por vendedor estilo planilla (pendiente)
 
 Ver [docs/06_RESUMEN_EJECUTIVO_CRONOGRAMA.md](docs/06_RESUMEN_EJECUTIVO_CRONOGRAMA.md) y [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md).

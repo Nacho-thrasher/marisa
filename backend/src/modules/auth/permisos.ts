@@ -17,6 +17,8 @@ export const rolPermisos: Record<Rol, string[]> = {
     'ventas:ver',
     'ventas:crear',
     'ventas:anular',
+    'clientes:ver',
+    'clientes:crear',
     'reportes:ver',
   ],
   OPERARIO: [

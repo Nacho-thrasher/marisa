@@ -7,6 +7,7 @@ interface NavItem {
   icon: string;
   route: string;
   roles?: string[];
+  section: string;
 }
 
 @Component({
@@ -31,16 +32,25 @@ interface NavItem {
           </div>
         </div>
 
-        <nav class="mt-2 flex-1 space-y-1 px-3">
-          @for (item of items(); track item.route) {
-            <a
-              [routerLink]="item.route"
-              routerLinkActive="bg-white/15 text-white shadow-sm"
-              class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-brand-100 transition hover:bg-white/10 hover:text-white"
-            >
-              <span class="material-icons text-[20px]">{{ item.icon }}</span>
-              {{ item.label }}
-            </a>
+        <nav class="mt-2 flex-1 space-y-4 overflow-y-auto px-3 pb-4">
+          @for (sec of secciones(); track sec.nombre) {
+            <div>
+              <p class="px-3 pb-1 text-[10px] font-semibold tracking-wider text-brand-300 uppercase">
+                {{ sec.nombre }}
+              </p>
+              <div class="space-y-0.5">
+                @for (item of sec.items; track item.route) {
+                  <a
+                    [routerLink]="item.route"
+                    routerLinkActive="bg-white/15 text-white shadow-sm"
+                    class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-brand-100 transition hover:bg-white/10 hover:text-white"
+                  >
+                    <span class="material-icons text-[20px]">{{ item.icon }}</span>
+                    {{ item.label }}
+                  </a>
+                }
+              </div>
+            </div>
           }
         </nav>
 
@@ -85,17 +95,23 @@ export class Layout {
   readonly opened = signal(true);
 
   private readonly allItems: NavItem[] = [
-    { label: 'Dashboard', icon: 'dashboard', route: '/dashboard' },
-    { label: 'Inventario', icon: 'inventory_2', route: '/inventario', roles: ['GERENTE', 'OPERARIO'] },
-    { label: 'Producción', icon: 'precision_manufacturing', route: '/produccion', roles: ['GERENTE', 'OPERARIO'] },
-    { label: 'Ventas', icon: 'point_of_sale', route: '/ventas', roles: ['GERENTE'] },
-    { label: 'Nómina', icon: 'groups', route: '/nomina', roles: ['RRHH'] },
-    { label: 'Auditoría', icon: 'fact_check', route: '/auditoria', roles: ['CONTADOR'] },
+    { label: 'Dashboard', icon: 'dashboard', route: '/dashboard', section: 'General' },
+    { label: 'Inventario', icon: 'inventory_2', route: '/inventario', roles: ['GERENTE', 'OPERARIO'], section: 'Operaciones' },
+    { label: 'Producción', icon: 'precision_manufacturing', route: '/produccion', roles: ['GERENTE', 'OPERARIO'], section: 'Operaciones' },
+    { label: 'Ventas', icon: 'point_of_sale', route: '/ventas', roles: ['GERENTE'], section: 'Comercial' },
+    { label: 'Clientes', icon: 'storefront', route: '/clientes', roles: ['GERENTE'], section: 'Comercial' },
+    { label: 'Reporte mensual', icon: 'bar_chart', route: '/reportes', roles: ['GERENTE', 'CONTADOR'], section: 'Comercial' },
+    { label: 'Nómina', icon: 'groups', route: '/nomina', roles: ['RRHH'], section: 'Administración' },
+    { label: 'Auditoría', icon: 'fact_check', route: '/auditoria', roles: ['CONTADOR'], section: 'Administración' },
   ];
 
-  readonly items = computed(() =>
-    this.allItems.filter((i) => !i.roles || this.auth.hasRole(...i.roles)),
-  );
+  readonly secciones = computed(() => {
+    const visibles = this.allItems.filter((i) => !i.roles || this.auth.hasRole(...i.roles));
+    const orden = ['General', 'Operaciones', 'Comercial', 'Administración'];
+    return orden
+      .map((s) => ({ nombre: s, items: visibles.filter((i) => i.section === s) }))
+      .filter((g) => g.items.length > 0);
+  });
 
   readonly inicial = computed(() => (this.user()?.username ?? '?').charAt(0).toUpperCase());
   readonly pageLabel = computed(() => this.user()?.rol ?? '');

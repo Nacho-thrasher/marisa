@@ -12,6 +12,10 @@ export interface Producto {
   pesoGramos: number | null;
   costoPromedio: string | null;
   precioVenta: string | null;
+  precioMayorista: string | null;
+  precioRevendedor: string | null;
+  precioComercio: string | null;
+  precioPublico: string | null;
   activo: boolean;
 }
 

@@ -112,23 +112,45 @@ async function seedConfiguracionRRHH() {
 }
 
 async function seedProductosYRecetas() {
+  // Productos y listas de precios reales (del Excel del cliente).
+  // [revendedor, comercio, mayorista, publico] aproximados sobre el precio revendedor.
   const productos = [
-    { codigo: 'PAPA-45', nombre: 'Papas Fritas 45gr', categoria: 'papas_fritas', peso: 45, precio: 350 },
-    { codigo: 'PAPA-90', nombre: 'Papas Fritas 90gr', categoria: 'papas_fritas', peso: 90, precio: 600 },
-    { codigo: 'PAPA-500', nombre: 'Papas Fritas 500gr', categoria: 'papas_fritas', peso: 500, precio: 2200 },
-    { codigo: 'MANI-90', nombre: 'Maní 90gr', categoria: 'mani', peso: 90, precio: 500 },
-    { codigo: 'PREPIZZA-C', nombre: 'PrePizza común', categoria: 'panificados', peso: null, precio: 800 },
+    { codigo: 'PAPA-45', nombre: 'Papas Fritas x 45g', categoria: 'papas_fritas', peso: 45, rev: 550 },
+    { codigo: 'PAPA-90', nombre: 'Papas Fritas x 90g', categoria: 'papas_fritas', peso: 90, rev: 950 },
+    { codigo: 'PAPA-190', nombre: 'Papas Fritas x 190g', categoria: 'papas_fritas', peso: 190, rev: 1780 },
+    { codigo: 'PAPA-500', nombre: 'Papas Fritas x 500g', categoria: 'papas_fritas', peso: 500, rev: 3700 },
+    { codigo: 'PAPA-1K', nombre: 'Papas Fritas x 1kg', categoria: 'papas_fritas', peso: 1000, rev: 7800 },
+    { codigo: 'LLUVIA-250', nombre: 'Lluvia de Papa x 250g', categoria: 'papas_fritas', peso: 250, rev: 2100 },
+    { codigo: 'LLUVIA-500', nombre: 'Lluvia de Papa x 500g', categoria: 'papas_fritas', peso: 500, rev: 3700 },
+    { codigo: 'LLUVIA-1K', nombre: 'Lluvia de Papa x 1kg', categoria: 'papas_fritas', peso: 1000, rev: 7800 },
+    { codigo: 'PALITO-100', nombre: 'Palitos Salados x 100g', categoria: 'palitos', peso: 100, rev: 450 },
+    { codigo: 'PALITO-250', nombre: 'Palitos Salados x 250g', categoria: 'palitos', peso: 250, rev: 980 },
+    { codigo: 'PALITO-500', nombre: 'Palitos Salados x 500g', categoria: 'palitos', peso: 500, rev: 1650 },
+    { codigo: 'PALITO-1K', nombre: 'Palitos Salados x 1kg', categoria: 'palitos', peso: 1000, rev: 3500 },
+    { codigo: 'MANI-90', nombre: 'Maní Salados x 90g', categoria: 'mani', peso: 90, rev: 550 },
+    { codigo: 'PREPIZZA-C', nombre: 'PrePizza común', categoria: 'panificados', peso: null, rev: 800 },
   ];
   for (const p of productos) {
+    const rev = p.rev;
     await prisma.producto.upsert({
       where: { codigo: p.codigo },
-      update: {},
+      update: {
+        precioVenta: D(rev),
+        precioRevendedor: D(rev),
+        precioMayorista: D(Math.round(rev * 0.9)),
+        precioComercio: D(Math.round(rev * 1.1)),
+        precioPublico: D(Math.round(rev * 1.25)),
+      },
       create: {
         codigo: p.codigo,
         nombre: p.nombre,
         categoria: p.categoria,
         pesoGramos: p.peso ?? undefined,
-        precioVenta: D(p.precio),
+        precioVenta: D(rev),
+        precioRevendedor: D(rev),
+        precioMayorista: D(Math.round(rev * 0.9)),
+        precioComercio: D(Math.round(rev * 1.1)),
+        precioPublico: D(Math.round(rev * 1.25)),
       },
     });
   }
@@ -219,6 +241,49 @@ async function seedEmpleados() {
   console.log(`✓ ${empleados.length} empleados con estructura salarial`);
 }
 
+async function seedVendedoresYClientes() {
+  // Vendedores reales (hojas del Excel) con zona de venta en Salta.
+  const vendedores = [
+    { nombre: 'Angel', zona: 'Centro' },
+    { nombre: 'Bravo', zona: 'Norte' },
+    { nombre: 'Carlos', zona: 'Sur' },
+    { nombre: 'Damian', zona: 'Oeste' },
+    { nombre: 'Gustavo', zona: 'Norte' },
+    { nombre: 'Hugo', zona: 'Centro' },
+    { nombre: 'Juan', zona: 'Este' },
+    { nombre: 'Lucio', zona: 'Sur' },
+  ];
+  const vendMap = new Map<string, bigint>();
+  for (const v of vendedores) {
+    const existe = await prisma.vendedor.findFirst({ where: { nombre: v.nombre } });
+    const rec = existe ?? (await prisma.vendedor.create({ data: v }));
+    vendMap.set(v.nombre, rec.id);
+  }
+
+  const clientes = [
+    { nombre: 'Claudio', tipoLista: 'REVENDEDOR' as const, zona: 'Centro', localidad: 'Salta', vend: 'Hugo' },
+    { nombre: 'Lucio Fiambrería', tipoLista: 'COMERCIO' as const, zona: 'Sur', localidad: 'Salta', vend: 'Lucio' },
+    { nombre: 'Kiosco El Sol', tipoLista: 'COMERCIO' as const, zona: 'Norte', localidad: 'Salta', vend: 'Bravo' },
+    { nombre: 'Distribuidora del Valle', tipoLista: 'MAYORISTA' as const, zona: 'Oeste', localidad: 'Salta', vend: 'Damian' },
+    { nombre: 'Almacén Doña Rosa', tipoLista: 'COMERCIO' as const, zona: 'Este', localidad: 'Cerrillos', vend: 'Juan' },
+  ];
+  for (const c of clientes) {
+    const existe = await prisma.cliente.findFirst({ where: { nombre: c.nombre } });
+    if (!existe) {
+      await prisma.cliente.create({
+        data: {
+          nombre: c.nombre,
+          tipoLista: c.tipoLista,
+          zona: c.zona,
+          localidad: c.localidad,
+          vendedorId: vendMap.get(c.vend),
+        },
+      });
+    }
+  }
+  console.log(`✓ ${vendedores.length} vendedores y ${clientes.length} clientes con zona`);
+}
+
 async function main() {
   console.log('Seeding...');
   await seedUsuarios();
@@ -226,6 +291,7 @@ async function main() {
   await seedConfiguracionRRHH();
   await seedProductosYRecetas();
   await seedEmpleados();
+  await seedVendedoresYClientes();
   console.log('Seed completo ✅');
 }
 

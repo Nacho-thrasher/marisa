@@ -9,6 +9,9 @@ const D = (n: number | string) => new Prisma.Decimal(n);
 interface CrearVentaInput {
   cliente_nombre?: string;
   cliente_cuit?: string;
+  cliente_id?: number;
+  vendedor_id?: number;
+  lista_precio?: string;
   fecha_venta?: string;
   medio_pago?: string;
   descuento_porcentaje?: number;
@@ -60,6 +63,9 @@ export async function crear(req: Request, input: CrearVentaInput) {
       descuentoMonto: descMonto,
       totalNeto,
       medioPago: input.medio_pago,
+      listaPrecio: input.lista_precio ? (input.lista_precio as Prisma.VentaCreateInput['listaPrecio']) : undefined,
+      clienteId: input.cliente_id != null ? BigInt(input.cliente_id) : null,
+      vendedorId: input.vendedor_id != null ? BigInt(input.vendedor_id) : null,
       registradoPorId: BigInt(req.user!.id),
       observaciones: input.observaciones,
       detalles: { create: detalles },
@@ -203,5 +209,57 @@ export async function resumen(fechaInicio?: string, fechaFin?: string) {
     cantidad_ventas: ventas.length,
     total_vendido: totalVendido,
     ganancia_total: gananciaTotal,
+  };
+}
+
+/**
+ * Reporte mensual estilo planilla "MENSUAL" del Excel del cliente:
+ * cuánto vendió cada vendedor (monto y unidades) y matriz producto × vendedor.
+ */
+export async function reporteMensual(mes: number, anio: number) {
+  const desde = new Date(anio, mes - 1, 1);
+  const hasta = new Date(anio, mes, 1);
+
+  const ventas = await prisma.venta.findMany({
+    where: { anulada: false, fechaVenta: { gte: desde, lt: hasta } },
+    include: { vendedor: true, detalles: { include: { producto: true } } },
+  });
+
+  const porVendedor = new Map<string, { vendedor: string; ventas: number; unidades: Prisma.Decimal; monto: Prisma.Decimal }>();
+  const productos = new Set<string>();
+  // matriz[producto][vendedor] = unidades
+  const matriz = new Map<string, Map<string, Prisma.Decimal>>();
+  let totalMonto = D(0);
+
+  for (const v of ventas) {
+    const vend = v.vendedor?.nombre ?? 'Sin vendedor';
+    const pv = porVendedor.get(vend) ?? { vendedor: vend, ventas: 0, unidades: D(0), monto: D(0) };
+    pv.ventas += 1;
+    pv.monto = pv.monto.plus(v.totalNeto);
+    totalMonto = totalMonto.plus(v.totalNeto);
+    for (const d of v.detalles) {
+      pv.unidades = pv.unidades.plus(d.cantidad);
+      const prod = d.producto.nombre;
+      productos.add(prod);
+      if (!matriz.has(prod)) matriz.set(prod, new Map());
+      const fila = matriz.get(prod)!;
+      fila.set(vend, (fila.get(vend) ?? D(0)).plus(d.cantidad));
+    }
+    porVendedor.set(vend, pv);
+  }
+
+  const vendedores = [...porVendedor.keys()].sort();
+  const matrizArray = [...productos].sort().map((prod) => ({
+    producto: prod,
+    por_vendedor: Object.fromEntries(vendedores.map((vd) => [vd, matriz.get(prod)?.get(vd) ?? D(0)])),
+    total: vendedores.reduce((a, vd) => a.plus(matriz.get(prod)?.get(vd) ?? D(0)), D(0)),
+  }));
+
+  return {
+    periodo: `${String(mes).padStart(2, '0')}/${anio}`,
+    total_monto: totalMonto,
+    por_vendedor: [...porVendedor.values()].sort((a, b) => Number(b.monto) - Number(a.monto)),
+    vendedores,
+    matriz: matrizArray,
   };
 }

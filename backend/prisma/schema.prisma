@@ -61,6 +61,13 @@ enum EstadoNomina {
   CANCELADA
 }
 
+enum TipoLista {
+  MAYORISTA
+  REVENDEDOR
+  COMERCIO
+  PUBLICO
+}
+
 enum TipoDia {
   NORMAL
   FERIADO
@@ -204,6 +211,11 @@ model Producto {
   activo                Boolean  @default(true)
   costoPromedio         Decimal? @map("costo_promedio") @db.Decimal(10, 2)
   precioVenta           Decimal? @map("precio_venta") @db.Decimal(10, 2)
+  // Listas de precios diferenciadas (RF del cliente).
+  precioMayorista       Decimal? @map("precio_mayorista") @db.Decimal(10, 2)
+  precioRevendedor      Decimal? @map("precio_revendedor") @db.Decimal(10, 2)
+  precioComercio        Decimal? @map("precio_comercio") @db.Decimal(10, 2)
+  precioPublico         Decimal? @map("precio_publico") @db.Decimal(10, 2)
   margenBrutoPorcentaje Decimal? @map("margen_bruto_porcentaje") @db.Decimal(5, 2)
   observaciones         String?
   fechaCreacion         DateTime @default(now()) @map("fecha_creacion")
@@ -278,6 +290,8 @@ model OrdenProduccion {
   horaFin             DateTime?   @map("hora_fin") @db.Time
   estado              EstadoOrden @default(PLANIFICADA)
   responsableId       BigInt?     @map("responsable_id")
+  numeroLote          String?     @map("numero_lote") @db.VarChar(100)
+  fechaVencimiento    DateTime?   @map("fecha_vencimiento") @db.Date
   observaciones       String?
   creadoPorId         BigInt      @map("creado_por_id")
   fechaCreacion       DateTime    @default(now()) @map("fecha_creacion")
@@ -343,6 +357,9 @@ model Venta {
   descuentoMonto      Decimal         @default(0) @map("descuento_monto") @db.Decimal(12, 2)
   totalNeto           Decimal         @map("total_neto") @db.Decimal(12, 2)
   medioPago           String?         @map("medio_pago") @db.VarChar(50)
+  listaPrecio         TipoLista?      @map("lista_precio")
+  clienteId           BigInt?         @map("cliente_id")
+  vendedorId          BigInt?         @map("vendedor_id")
   registradoPorId     BigInt          @map("registrado_por_id")
   observaciones       String?
   fechaCreacion       DateTime        @default(now()) @map("fecha_creacion")
@@ -351,11 +368,15 @@ model Venta {
   motivoAnulacion     String?         @map("motivo_anulacion") @db.VarChar(200)
 
   registradoPor Usuario        @relation(fields: [registradoPorId], references: [id])
+  cliente       Cliente?       @relation(fields: [clienteId], references: [id])
+  vendedor      Vendedor?      @relation(fields: [vendedorId], references: [id])
   detalles      VentaDetalle[]
 
   @@index([fechaVenta])
   @@index([clienteNombre])
   @@index([anulada])
+  @@index([vendedorId])
+  @@index([clienteId])
   @@map("ventas")
 }
 
@@ -541,6 +562,47 @@ model Asistencia {
   @@unique([empleadoId, fecha])
   @@index([empleadoId, fecha])
   @@map("asistencia")
+}
+
+// ──────────────────────── CLIENTES Y VENDEDORES ────────────────────────
+
+model Vendedor {
+  id            BigInt   @id @default(autoincrement())
+  nombre        String   @db.VarChar(150)
+  zona          String?  @db.VarChar(100)
+  telefono      String?  @db.VarChar(50)
+  activo        Boolean  @default(true)
+  fechaCreacion DateTime @default(now()) @map("fecha_creacion")
+
+  clientes Cliente[]
+  ventas   Venta[]
+
+  @@index([activo])
+  @@map("vendedores")
+}
+
+model Cliente {
+  id            BigInt    @id @default(autoincrement())
+  nombre        String    @db.VarChar(200)
+  tipoLista     TipoLista @default(REVENDEDOR) @map("tipo_lista")
+  zona          String?   @db.VarChar(100) // zona de venta en Salta
+  direccion     String?
+  localidad     String?   @db.VarChar(100)
+  telefono      String?   @db.VarChar(50)
+  cuit          String?   @db.VarChar(20)
+  vendedorId    BigInt?   @map("vendedor_id")
+  activo        Boolean   @default(true)
+  observaciones String?
+  fechaCreacion DateTime  @default(now()) @map("fecha_creacion")
+  fechaActualizacion DateTime @updatedAt @map("fecha_actualizacion")
+
+  vendedor Vendedor? @relation(fields: [vendedorId], references: [id])
+  ventas   Venta[]
+
+  @@index([zona])
+  @@index([tipoLista])
+  @@index([activo])
+  @@map("clientes")
 }
 
 // ──────────────────────────── AUDITORÍA ────────────────────────────

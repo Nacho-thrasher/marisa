@@ -80,6 +80,10 @@ interface CrearProductoInput {
   categoria: string;
   peso_gramos?: number;
   precio_venta?: number;
+  precio_mayorista?: number;
+  precio_revendedor?: number;
+  precio_comercio?: number;
+  precio_publico?: number;
 }
 
 export async function crear(req: Request, input: CrearProductoInput) {
@@ -91,10 +95,80 @@ export async function crear(req: Request, input: CrearProductoInput) {
       categoria: input.categoria,
       pesoGramos: input.peso_gramos,
       precioVenta: input.precio_venta != null ? D(input.precio_venta) : null,
+      precioMayorista: input.precio_mayorista != null ? D(input.precio_mayorista) : null,
+      precioRevendedor: input.precio_revendedor != null ? D(input.precio_revendedor) : null,
+      precioComercio: input.precio_comercio != null ? D(input.precio_comercio) : null,
+      precioPublico: input.precio_publico != null ? D(input.precio_publico) : null,
     },
   });
   await audit(req, { accion: 'CREAR', modulo: 'produccion', tablaAfectada: 'productos', registroId: producto.id, valoresNuevos: input });
   return producto;
+}
+
+interface PreciosInput {
+  precio_venta?: number;
+  precio_mayorista?: number;
+  precio_revendedor?: number;
+  precio_comercio?: number;
+  precio_publico?: number;
+}
+
+/** Actualiza las listas de precios de un producto (RF: modificar cuando sube de precio). */
+export async function actualizarPrecios(req: Request, id: bigint, input: PreciosInput) {
+  const actual = await prisma.producto.findUnique({ where: { id } });
+  if (!actual) throw AppError.notFound('Producto no encontrado');
+
+  const producto = await prisma.producto.update({
+    where: { id },
+    data: {
+      precioVenta: input.precio_venta != null ? D(input.precio_venta) : undefined,
+      precioMayorista: input.precio_mayorista != null ? D(input.precio_mayorista) : undefined,
+      precioRevendedor: input.precio_revendedor != null ? D(input.precio_revendedor) : undefined,
+      precioComercio: input.precio_comercio != null ? D(input.precio_comercio) : undefined,
+      precioPublico: input.precio_publico != null ? D(input.precio_publico) : undefined,
+    },
+  });
+  await audit(req, {
+    accion: 'EDITAR',
+    modulo: 'ventas',
+    tablaAfectada: 'productos',
+    registroId: id,
+    valoresAnteriores: {
+      mayorista: actual.precioMayorista,
+      revendedor: actual.precioRevendedor,
+      comercio: actual.precioComercio,
+      publico: actual.precioPublico,
+    },
+    valoresNuevos: input,
+  });
+  return producto;
+}
+
+/**
+ * Simula el costo de un producto nuevo a partir de una lista de insumos,
+ * sin crearlo (caso "papas 150g que no tenemos" del cliente).
+ */
+export async function simularCosto(insumos: { insumo_id: number; cantidad: number }[]) {
+  const ids = insumos.map((i) => BigInt(i.insumo_id));
+  const catalogo = await prisma.insumo.findMany({ where: { id: { in: ids } } });
+  const map = new Map(catalogo.map((i) => [i.id.toString(), i]));
+
+  let costoTotal = D(0);
+  const detalle = insumos.map((i) => {
+    const insumo = map.get(String(i.insumo_id));
+    if (!insumo) throw AppError.badRequest(`Insumo ${i.insumo_id} no existe`);
+    const costo = insumo.costoActual.times(i.cantidad);
+    costoTotal = costoTotal.plus(costo);
+    return {
+      insumo: insumo.nombre,
+      cantidad: i.cantidad,
+      unidad: insumo.unidadMedida,
+      costo_unitario: insumo.costoActual,
+      costo_total: costo,
+    };
+  });
+
+  return { costo_total: costoTotal, detalle };
 }
 
 interface RecetaInsumoInput {

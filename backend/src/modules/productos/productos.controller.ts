@@ -61,6 +61,28 @@ export async function crearReceta(req: Request, res: Response) {
   return created(res, await service.crearReceta(req, BigInt(req.params.id), input));
 }
 
+const preciosSchema = z.object({
+  precio_venta: z.number().nonnegative().optional(),
+  precio_mayorista: z.number().nonnegative().optional(),
+  precio_revendedor: z.number().nonnegative().optional(),
+  precio_comercio: z.number().nonnegative().optional(),
+  precio_publico: z.number().nonnegative().optional(),
+});
+
+export async function actualizarPrecios(req: Request, res: Response) {
+  const input = preciosSchema.parse(req.body);
+  return ok(res, await service.actualizarPrecios(req, BigInt(req.params.id), input));
+}
+
+const simularSchema = z.object({
+  insumos: z.array(z.object({ insumo_id: z.number().int(), cantidad: z.number().positive() })).min(1),
+});
+
+export async function simularCosto(req: Request, res: Response) {
+  const { insumos } = simularSchema.parse(req.body);
+  return ok(res, await service.simularCosto(insumos));
+}
+
 export async function categorias(_req: Request, res: Response) {
   return ok(res, await service.categorias());
 }

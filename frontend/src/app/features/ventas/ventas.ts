@@ -3,6 +3,7 @@ import { DecimalPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { VentaService, VentaListItem } from '../../core/services/venta.service';
 import { ProduccionService, Producto } from '../../core/services/produccion.service';
+import { ClientesService, Cliente, Vendedor, TipoLista } from '../../core/services/clientes.service';
 import { ToastService } from '../../shared/ui/toast.service';
 import { Modal } from '../../shared/ui/modal';
 import { Paginator } from '../../shared/ui/paginator';
@@ -71,8 +72,29 @@ interface Linea {
     @if (mostrarNueva()) {
       <app-modal title="Nueva venta" [wide]="true" (closed)="mostrarNueva.set(false)">
         <div class="grid grid-cols-2 gap-4">
-          <div><label class="label">Cliente</label><input class="input" [(ngModel)]="cliente" /></div>
-          <div><label class="label">CUIT</label><input class="input" [(ngModel)]="cuit" /></div>
+          <div>
+            <label class="label">Cliente</label>
+            <select class="select" [(ngModel)]="clienteId" (ngModelChange)="onClienteChange()">
+              <option [ngValue]="null">— Cliente ocasional —</option>
+              @for (c of clientes(); track c.id) { <option [ngValue]="c.id">{{ c.nombre }} ({{ listaLabel(c.tipo_lista) }})</option> }
+            </select>
+          </div>
+          <div>
+            <label class="label">Vendedor</label>
+            <select class="select" [(ngModel)]="vendedorId">
+              <option [ngValue]="null">— Sin vendedor —</option>
+              @for (v of vendedores(); track v.id) { <option [ngValue]="v.id">{{ v.nombre }}</option> }
+            </select>
+          </div>
+          <div>
+            <label class="label">Lista de precios</label>
+            <select class="select" [(ngModel)]="listaPrecio" (ngModelChange)="reprecificar()">
+              <option value="MAYORISTA">Distribuidor mayorista</option>
+              <option value="REVENDEDOR">Revendedor</option>
+              <option value="COMERCIO">Comercio</option>
+              <option value="PUBLICO">Al público</option>
+            </select>
+          </div>
           <div>
             <label class="label">Medio de pago</label>
             <select class="select" [(ngModel)]="medioPago">
@@ -82,6 +104,7 @@ interface Linea {
               <option value="tarjeta">Tarjeta</option>
             </select>
           </div>
+          <div><label class="label">CUIT</label><input class="input" [(ngModel)]="cuit" /></div>
           <div><label class="label">Descuento (%)</label><input class="input" type="number" min="0" max="100" [(ngModel)]="descuento" /></div>
         </div>
 
@@ -119,6 +142,7 @@ interface Linea {
 export class Ventas implements OnInit {
   private service = inject(VentaService);
   private prodService = inject(ProduccionService);
+  private clientesService = inject(ClientesService);
   private toast = inject(ToastService);
 
   readonly ventas = signal<VentaListItem[]>([]);
@@ -130,11 +154,15 @@ export class Ventas implements OnInit {
 
   readonly mostrarNueva = signal(false);
   readonly productos = signal<Producto[]>([]);
+  readonly clientes = signal<Cliente[]>([]);
+  readonly vendedores = signal<Vendedor[]>([]);
   readonly lineas = signal<Linea[]>([]);
-  cliente = '';
   cuit = '';
   medioPago = 'efectivo';
   descuento = 0;
+  clienteId: number | null = null;
+  vendedorId: number | null = null;
+  listaPrecio: TipoLista = 'REVENDEDOR';
 
   readonly totalEstimado = computed(() => {
     const bruto = this.lineas().reduce((a, l) => a + (l.cantidad || 0) * (l.precio_unitario || 0), 0);
@@ -145,6 +173,39 @@ export class Ventas implements OnInit {
     this.cargar(1);
     this.cargarResumen();
     this.prodService.productos().subscribe((res) => this.productos.set(res.data));
+    this.clientesService.listar(1, 200).subscribe((res) => this.clientes.set(res.data));
+    this.clientesService.vendedores().subscribe((res) => this.vendedores.set(res.data));
+  }
+
+  /** Precio del producto según la lista seleccionada (fallback a precioVenta). */
+  private precioLista(p: Producto): number {
+    const map: Record<TipoLista, string | null> = {
+      MAYORISTA: p.precioMayorista,
+      REVENDEDOR: p.precioRevendedor,
+      COMERCIO: p.precioComercio,
+      PUBLICO: p.precioPublico,
+    };
+    return Number(map[this.listaPrecio] ?? p.precioVenta ?? 0);
+  }
+
+  onClienteChange() {
+    const c = this.clientes().find((x) => x.id === this.clienteId);
+    if (c) {
+      this.listaPrecio = c.tipo_lista;
+      if (c.vendedor_id) this.vendedorId = c.vendedor_id;
+      this.cuit = c.cuit ?? this.cuit;
+      this.reprecificar();
+    }
+  }
+
+  /** Recalcula los precios de todas las líneas según la lista vigente. */
+  reprecificar() {
+    this.lineas.update((ls) =>
+      ls.map((l) => {
+        const p = this.productos().find((x) => x.id === l.producto_id);
+        return p ? { ...l, precio_unitario: this.precioLista(p) } : l;
+      }),
+    );
   }
 
   cargar(p: number) {
@@ -165,12 +226,18 @@ export class Ventas implements OnInit {
   }
 
   abrirNueva() {
-    this.cliente = '';
+    this.clienteId = null;
+    this.vendedorId = null;
+    this.listaPrecio = 'REVENDEDOR';
     this.cuit = '';
     this.medioPago = 'efectivo';
     this.descuento = 0;
     this.lineas.set([{ producto_id: null, cantidad: 1, precio_unitario: 0 }]);
     this.mostrarNueva.set(true);
+  }
+
+  listaLabel(t: string) {
+    return { MAYORISTA: 'Mayorista', REVENDEDOR: 'Revendedor', COMERCIO: 'Comercio', PUBLICO: 'Público' }[t] ?? t;
   }
 
   agregarLinea() {
@@ -183,7 +250,7 @@ export class Ventas implements OnInit {
 
   autoPrecio(l: Linea) {
     const p = this.productos().find((x) => x.id === l.producto_id);
-    if (p?.precioVenta) l.precio_unitario = Number(p.precioVenta);
+    if (p) l.precio_unitario = this.precioLista(p);
   }
 
   puedeGuardar() {
@@ -193,9 +260,13 @@ export class Ventas implements OnInit {
 
   guardar() {
     this.saving.set(true);
+    const clienteSel = this.clientes().find((c) => c.id === this.clienteId);
     this.service
       .crear({
-        cliente_nombre: this.cliente || undefined,
+        cliente_nombre: clienteSel?.nombre,
+        cliente_id: this.clienteId ?? undefined,
+        vendedor_id: this.vendedorId ?? undefined,
+        lista_precio: this.listaPrecio,
         cliente_cuit: this.cuit || undefined,
         medio_pago: this.medioPago,
         descuento_porcentaje: this.descuento || undefined,

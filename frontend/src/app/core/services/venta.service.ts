@@ -35,10 +35,21 @@ export interface VentaDetalle {
 export interface CrearVentaBody {
   cliente_nombre?: string;
   cliente_cuit?: string;
+  cliente_id?: number;
+  vendedor_id?: number;
+  lista_precio?: 'MAYORISTA' | 'REVENDEDOR' | 'COMERCIO' | 'PUBLICO';
   medio_pago?: string;
   descuento_porcentaje?: number;
   observaciones?: string;
   detalles: { producto_id: number; cantidad: number; precio_unitario: number }[];
+}
+
+export interface ReporteMensual {
+  periodo: string;
+  total_monto: string;
+  por_vendedor: { vendedor: string; ventas: number; unidades: string; monto: string }[];
+  vendedores: string[];
+  matriz: { producto: string; por_vendedor: Record<string, string>; total: string }[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -66,5 +77,10 @@ export class VentaService {
 
   resumen() {
     return this.http.get<ApiResponse<{ cantidad_ventas: number; total_vendido: string; ganancia_total: string }>>(`${this.api}/ventas/resumen`);
+  }
+
+  reporteMensual(mes: number, ano: number) {
+    const params = new HttpParams().set('mes', mes).set('ano', ano);
+    return this.http.get<ApiResponse<ReporteMensual>>(`${this.api}/ventas/reporte-mensual`, { params });
   }
 }

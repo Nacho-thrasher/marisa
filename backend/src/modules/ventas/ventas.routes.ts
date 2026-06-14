@@ -8,6 +8,7 @@ export const ventasRouter = Router();
 ventasRouter.use(authenticate);
 
 ventasRouter.get('/resumen', asyncHandler(ctrl.resumen));
+ventasRouter.get('/reporte-mensual', asyncHandler(ctrl.reporteMensual));
 ventasRouter.get('/', asyncHandler(ctrl.listar));
 ventasRouter.get('/:id', asyncHandler(ctrl.obtener));
 

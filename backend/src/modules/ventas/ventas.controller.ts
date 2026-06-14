@@ -8,6 +8,9 @@ const boolParam = (v: unknown) => v === 'true' || v === true;
 const crearSchema = z.object({
   cliente_nombre: z.string().optional(),
   cliente_cuit: z.string().optional(),
+  cliente_id: z.number().int().optional(),
+  vendedor_id: z.number().int().optional(),
+  lista_precio: z.enum(['MAYORISTA', 'REVENDEDOR', 'COMERCIO', 'PUBLICO']).optional(),
   fecha_venta: z.string().optional(),
   medio_pago: z.string().optional(),
   descuento_porcentaje: z.number().min(0).max(100).optional(),
@@ -55,4 +58,10 @@ export async function anular(req: Request, res: Response) {
 
 export async function resumen(req: Request, res: Response) {
   return ok(res, await service.resumen(req.query.fecha_inicio as string, req.query.fecha_fin as string));
+}
+
+export async function reporteMensual(req: Request, res: Response) {
+  const mes = Number(req.query.mes) || new Date().getMonth() + 1;
+  const anio = Number(req.query.ano) || new Date().getFullYear();
+  return ok(res, await service.reporteMensual(mes, anio));
 }
