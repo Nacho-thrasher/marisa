@@ -166,6 +166,25 @@ export async function listarNominas(p: { page: number; limit: number; skip: numb
   return { data, total };
 }
 
+export async function datosRecibo(reciboId: bigint) {
+  const r = await prisma.reciboSueldo.findUnique({ where: { id: reciboId }, include: { empleado: true } });
+  if (!r) throw AppError.notFound('Recibo no encontrado');
+  return {
+    numero: r.numeroRecibo,
+    empleado: `${r.empleado.nombre} ${r.empleado.apellido}`,
+    periodo: `${String(r.periodoMes).padStart(2, '0')}/${r.periodoAnio}`,
+    items: [
+      { label: 'Sueldo básico', monto: r.sueldoBasico },
+      { label: 'Bono fijo', monto: r.bonoFijo },
+      { label: 'Antigüedad', monto: r.antiguedadMonto },
+      { label: 'Aportes y descuentos', monto: r.totalDescuentos, descuento: true },
+    ],
+    totalHaberes: r.totalHaberes,
+    totalDescuentos: r.totalDescuentos,
+    neto: r.netoAPagar,
+  };
+}
+
 export async function recibos(nominaId: bigint) {
   const nomina = await prisma.nominaMensual.findUnique({ where: { id: nominaId } });
   if (!nomina) throw AppError.notFound('Nómina no encontrada');

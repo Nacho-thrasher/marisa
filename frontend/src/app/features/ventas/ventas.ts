@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { VentaService, VentaListItem } from '../../core/services/venta.service';
 import { ProduccionService, Producto } from '../../core/services/produccion.service';
 import { ClientesService, Cliente, Vendedor, TipoLista } from '../../core/services/clientes.service';
+import { DescargasService } from '../../core/services/descargas.service';
 import { ToastService } from '../../shared/ui/toast.service';
 import { Modal } from '../../shared/ui/modal';
 import { Paginator } from '../../shared/ui/paginator';
@@ -52,8 +53,11 @@ interface Linea {
                 <td class="text-right tabular-nums">\${{ v.total | number: '1.0-2' }}</td>
                 <td><span class="badge" [class]="v.estado === 'VIGENTE' ? 'badge-ok' : 'badge-critico'">{{ v.estado }}</span></td>
                 <td class="text-right">
+                  <button class="btn-ghost btn-icon" title="Descargar remito (PDF)" (click)="descargarRemito(v)">
+                    <span class="material-icons text-[20px]">picture_as_pdf</span>
+                  </button>
                   @if (v.estado === 'VIGENTE') {
-                    <button class="btn-ghost btn-icon rounded-lg text-rose-600" title="Anular" (click)="anular(v)">
+                    <button class="btn-ghost btn-icon text-rose-600" title="Anular" (click)="anular(v)">
                       <span class="material-icons text-[20px]">block</span>
                     </button>
                   }
@@ -143,6 +147,7 @@ export class Ventas implements OnInit {
   private service = inject(VentaService);
   private prodService = inject(ProduccionService);
   private clientesService = inject(ClientesService);
+  private descargas = inject(DescargasService);
   private toast = inject(ToastService);
 
   readonly ventas = signal<VentaListItem[]>([]);
@@ -286,6 +291,10 @@ export class Ventas implements OnInit {
         },
         error: () => this.saving.set(false),
       });
+  }
+
+  descargarRemito(v: VentaListItem) {
+    this.descargas.descargar(`/ventas/${v.venta_id}/remito`, `${v.numero_comprobante}.pdf`);
   }
 
   anular(v: VentaListItem) {

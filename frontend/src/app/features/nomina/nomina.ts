@@ -9,6 +9,7 @@ import {
   Recibo,
 } from '../../core/services/nomina.service';
 import { ToastService } from '../../shared/ui/toast.service';
+import { DescargasService } from '../../core/services/descargas.service';
 import { Modal } from '../../shared/ui/modal';
 
 type Tab = 'liquidaciones' | 'empleados' | 'aportes';
@@ -157,7 +158,7 @@ type Tab = 'liquidaciones' | 'empleados' | 'aportes';
     @if (reciboNomina(); as n) {
       <app-modal [title]="'Recibos — ' + n.periodo" [wide]="true" (closed)="reciboNomina.set(null)">
         <table class="table">
-          <thead><tr><th>Empleado</th><th class="text-right">Haberes</th><th class="text-right">Descuentos</th><th class="text-right">Neto</th><th class="text-right">Costo empresa</th></tr></thead>
+          <thead><tr><th>Empleado</th><th class="text-right">Haberes</th><th class="text-right">Descuentos</th><th class="text-right">Neto</th><th class="text-right">Costo empresa</th><th></th></tr></thead>
           <tbody>
             @for (r of recibos(); track r.recibo_id) {
               <tr>
@@ -166,11 +167,21 @@ type Tab = 'liquidaciones' | 'empleados' | 'aportes';
                 <td class="text-right tabular-nums text-rose-600">-\${{ r.total_descuentos | number: '1.0-2' }}</td>
                 <td class="text-right font-semibold tabular-nums">\${{ r.neto_a_pagar | number: '1.0-2' }}</td>
                 <td class="text-right tabular-nums text-slate-500">\${{ r.costo_total_empleado | number: '1.0-2' }}</td>
+                <td class="text-right">
+                  <button class="btn-ghost btn-icon" title="Recibo PDF" (click)="descargarRecibo(r)">
+                    <span class="material-icons text-[20px]">picture_as_pdf</span>
+                  </button>
+                </td>
               </tr>
             }
           </tbody>
         </table>
-        <div modal-footer><button class="btn btn-primary" (click)="reciboNomina.set(null)">Cerrar</button></div>
+        <div modal-footer>
+          <button class="btn btn-outline" (click)="exportarNomina(n)">
+            <span class="material-icons text-[20px]">download</span> Excel
+          </button>
+          <button class="btn btn-primary" (click)="reciboNomina.set(null)">Cerrar</button>
+        </div>
       </app-modal>
     }
 
@@ -213,6 +224,7 @@ type Tab = 'liquidaciones' | 'empleados' | 'aportes';
 })
 export class Nomina implements OnInit {
   private service = inject(NominaService);
+  private descargas = inject(DescargasService);
   private toast = inject(ToastService);
 
   readonly tabs = [
@@ -275,6 +287,14 @@ export class Nomina implements OnInit {
   verRecibos(n: NominaListItem) {
     this.reciboNomina.set(n);
     this.service.recibos(n.nomina_id).subscribe((res) => this.recibos.set(res.data));
+  }
+
+  descargarRecibo(r: Recibo) {
+    this.descargas.descargar(`/nomina/recibos/${r.recibo_id}/pdf`, `${r.numero_recibo}.pdf`);
+  }
+
+  exportarNomina(n: NominaListItem) {
+    this.descargas.descargar(`/nomina/${n.nomina_id}/excel`, `nomina-${n.periodo.replace('/', '-')}.xlsx`);
   }
 
   abrirNuevoEmpleado() {

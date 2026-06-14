@@ -2,6 +2,8 @@ import type { Request, Response } from 'express';
 import { z } from 'zod';
 import * as service from './nomina.service.js';
 import { ok, paginated, buildPagination, parsePaging } from '../../utils/response.js';
+import { reciboPdf } from '../../utils/pdf.js';
+import { nominaXlsx } from '../../utils/excel.js';
 
 export async function listarAportes(_req: Request, res: Response) {
   return ok(res, await service.listarAportes());
@@ -35,4 +37,16 @@ export async function listarNominas(req: Request, res: Response) {
 
 export async function recibos(req: Request, res: Response) {
   return ok(res, await service.recibos(BigInt(req.params.id)));
+}
+
+export async function reciboPdfHandler(req: Request, res: Response) {
+  const d = await service.datosRecibo(BigInt(req.params.reciboId));
+  reciboPdf(res, d);
+}
+
+export async function nominaExcel(req: Request, res: Response) {
+  const nominaId = BigInt(req.params.id);
+  const recibos = await service.recibos(nominaId);
+  const periodo = recibos[0]?.periodo ?? '';
+  await nominaXlsx(res, { periodo, recibos });
 }

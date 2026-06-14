@@ -2,6 +2,8 @@ import type { Request, Response } from 'express';
 import { z } from 'zod';
 import * as service from './ventas.service.js';
 import { ok, created, paginated, buildPagination, parsePaging } from '../../utils/response.js';
+import { remitoPdf } from '../../utils/pdf.js';
+import { reporteMensualXlsx } from '../../utils/excel.js';
 
 const boolParam = (v: unknown) => v === 'true' || v === true;
 
@@ -64,4 +66,21 @@ export async function reporteMensual(req: Request, res: Response) {
   const mes = Number(req.query.mes) || new Date().getMonth() + 1;
   const anio = Number(req.query.ano) || new Date().getFullYear();
   return ok(res, await service.reporteMensual(mes, anio));
+}
+
+export async function reporteMensualExcel(req: Request, res: Response) {
+  const mes = Number(req.query.mes) || new Date().getMonth() + 1;
+  const anio = Number(req.query.ano) || new Date().getFullYear();
+  const r = await service.reporteMensual(mes, anio);
+  await reporteMensualXlsx(res, {
+    periodo: r.periodo,
+    vendedores: r.vendedores,
+    porVendedor: r.por_vendedor,
+    matriz: r.matriz,
+  });
+}
+
+export async function remito(req: Request, res: Response) {
+  const d = await service.datosRemito(BigInt(req.params.id));
+  remitoPdf(res, d);
 }

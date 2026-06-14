@@ -35,6 +35,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/ventas/ventas').then((m) => m.Ventas),
       },
       {
+        path: 'pedidos',
+        canActivate: [roleGuard],
+        data: { roles: ['GERENTE', 'OPERARIO'] },
+        loadComponent: () => import('./features/pedidos/pedido-diario').then((m) => m.PedidoDiario),
+      },
+      {
         path: 'clientes',
         canActivate: [roleGuard],
         data: { roles: ['GERENTE'] },

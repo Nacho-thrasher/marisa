@@ -13,4 +13,6 @@ export const nominaRouter = Router();
 nominaRouter.use(authenticate, requireRole('RRHH'));
 nominaRouter.get('/', asyncHandler(ctrl.listarNominas));
 nominaRouter.post('/procesar', asyncHandler(ctrl.procesar));
+nominaRouter.get('/recibos/:reciboId/pdf', asyncHandler(ctrl.reciboPdfHandler));
 nominaRouter.get('/:id/recibos', asyncHandler(ctrl.recibos));
+nominaRouter.get('/:id/excel', asyncHandler(ctrl.nominaExcel));

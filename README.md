@@ -66,7 +66,7 @@ npm start                   # http://localhost:4200
 - [x] Reporte mensual de ventas por vendedor y matriz producto×vendedor (planilla "MENSUAL")
 - [x] Simulador de costo para productos nuevos; lote + vencimiento en producción
 - [x] Dashboard con KPIs por rol, alertas de stock, top vendedores y órdenes recientes
-- [ ] Reportes exportables a PDF/Excel (pendiente)
-- [ ] Carga de pedido diario por vendedor estilo planilla (pendiente)
+- [x] Carga de pedido diario por vendedor (grilla rápida estilo planilla)
+- [x] Exportación a PDF (remito de venta, recibo de sueldo) y Excel (reporte mensual, nómina)
 
 Ver [docs/06_RESUMEN_EJECUTIVO_CRONOGRAMA.md](docs/06_RESUMEN_EJECUTIVO_CRONOGRAMA.md) y [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md).

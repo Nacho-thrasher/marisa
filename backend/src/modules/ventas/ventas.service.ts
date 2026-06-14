@@ -174,6 +174,31 @@ export async function obtener(id: bigint) {
   };
 }
 
+export async function datosRemito(id: bigint) {
+  const v = await prisma.venta.findUnique({
+    where: { id },
+    include: { detalles: { include: { producto: true } }, cliente: true, vendedor: true },
+  });
+  if (!v) throw AppError.notFound('Venta no encontrada');
+  return {
+    numero: v.numeroComprobante,
+    fecha: v.fechaVenta,
+    cliente: v.cliente?.nombre ?? v.clienteNombre,
+    cuit: v.clienteCuit,
+    vendedor: v.vendedor?.nombre ?? null,
+    listaPrecio: v.listaPrecio,
+    detalles: v.detalles.map((d) => ({
+      producto: d.producto.nombre,
+      cantidad: d.cantidad,
+      precioUnitario: d.precioUnitario,
+      subtotal: d.subtotal,
+    })),
+    totalBruto: v.totalBruto,
+    descuento: v.descuentoMonto,
+    totalNeto: v.totalNeto,
+  };
+}
+
 export async function anular(req: Request, id: bigint, motivo: string) {
   const v = await prisma.venta.findUnique({ where: { id } });
   if (!v) throw AppError.notFound('Venta no encontrada');

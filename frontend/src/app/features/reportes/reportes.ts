@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { VentaService, ReporteMensual } from '../../core/services/venta.service';
+import { DescargasService } from '../../core/services/descargas.service';
 
 @Component({
   selector: 'app-reportes',
@@ -17,6 +18,9 @@ import { VentaService, ReporteMensual } from '../../core/services/venta.service'
           @for (m of meses; track m.v) { <option [ngValue]="m.v">{{ m.n }}</option> }
         </select>
         <input class="input w-28" type="number" [(ngModel)]="anio" (ngModelChange)="cargar()" />
+        <button class="btn btn-outline" (click)="exportar()">
+          <span class="material-icons text-[20px]">download</span> Excel
+        </button>
       </div>
     </div>
 
@@ -83,6 +87,7 @@ import { VentaService, ReporteMensual } from '../../core/services/venta.service'
 })
 export class Reportes implements OnInit {
   private service = inject(VentaService);
+  private descargas = inject(DescargasService);
 
   readonly rep = signal<ReporteMensual | null>(null);
   readonly meses = [
@@ -99,6 +104,13 @@ export class Reportes implements OnInit {
 
   cargar() {
     this.service.reporteMensual(this.mes, this.anio).subscribe((r) => this.rep.set(r.data));
+  }
+
+  exportar() {
+    this.descargas.descargar(
+      `/ventas/reporte-mensual/excel?mes=${this.mes}&ano=${this.anio}`,
+      `reporte-mensual-${this.mes}-${this.anio}.xlsx`,
+    );
   }
 
   num(v: string) {
