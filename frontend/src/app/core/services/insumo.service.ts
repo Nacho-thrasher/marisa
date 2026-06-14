@@ -17,6 +17,7 @@ export interface ListarInsumosQuery {
   search?: string;
   categoria?: string;
   stock_bajo?: boolean;
+  activos_solo?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -40,7 +41,7 @@ export class InsumoService {
     return this.http.post<ApiResponse<unknown>>(this.base, input);
   }
 
-  actualizar(id: number, input: Partial<CrearInsumoInput> & { razon_cambio_precio?: string }) {
+  actualizar(id: number, input: Partial<CrearInsumoInput> & { razon_cambio_precio?: string; activo?: boolean }) {
     return this.http.patch<ApiResponse<unknown>>(`${this.base}/${id}`, input);
   }
 

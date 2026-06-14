@@ -105,7 +105,12 @@ export async function crear(req: Request, input: CrearProductoInput) {
   return producto;
 }
 
-interface PreciosInput {
+interface ActualizarInput {
+  nombre?: string;
+  descripcion?: string;
+  categoria?: string;
+  peso_gramos?: number;
+  activo?: boolean;
   precio_venta?: number;
   precio_mayorista?: number;
   precio_revendedor?: number;
@@ -113,14 +118,18 @@ interface PreciosInput {
   precio_publico?: number;
 }
 
-/** Actualiza las listas de precios de un producto (RF: modificar cuando sube de precio). */
-export async function actualizarPrecios(req: Request, id: bigint, input: PreciosInput) {
+export async function actualizar(req: Request, id: bigint, input: ActualizarInput) {
   const actual = await prisma.producto.findUnique({ where: { id } });
   if (!actual) throw AppError.notFound('Producto no encontrado');
 
   const producto = await prisma.producto.update({
     where: { id },
     data: {
+      nombre: input.nombre,
+      descripcion: input.descripcion,
+      categoria: input.categoria,
+      pesoGramos: input.peso_gramos,
+      activo: input.activo,
       precioVenta: input.precio_venta != null ? D(input.precio_venta) : undefined,
       precioMayorista: input.precio_mayorista != null ? D(input.precio_mayorista) : undefined,
       precioRevendedor: input.precio_revendedor != null ? D(input.precio_revendedor) : undefined,
@@ -128,16 +137,22 @@ export async function actualizarPrecios(req: Request, id: bigint, input: Precios
       precioPublico: input.precio_publico != null ? D(input.precio_publico) : undefined,
     },
   });
+
+  const accion =
+    input.activo === false ? 'DESACTIVAR' : input.activo === true && !actual.activo ? 'ACTIVAR' : 'EDITAR';
+
   await audit(req, {
-    accion: 'EDITAR',
-    modulo: 'ventas',
+    accion,
+    modulo: 'produccion',
     tablaAfectada: 'productos',
     registroId: id,
     valoresAnteriores: {
-      mayorista: actual.precioMayorista,
-      revendedor: actual.precioRevendedor,
-      comercio: actual.precioComercio,
-      publico: actual.precioPublico,
+      precio_venta: actual.precioVenta,
+      precio_mayorista: actual.precioMayorista,
+      precio_revendedor: actual.precioRevendedor,
+      precio_comercio: actual.precioComercio,
+      precio_publico: actual.precioPublico,
+      activo: actual.activo,
     },
     valoresNuevos: input,
   });

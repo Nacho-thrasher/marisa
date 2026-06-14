@@ -161,6 +161,7 @@ interface ActualizarInput {
   dias_vencimiento_alerta?: number;
   observaciones?: string;
   razon_cambio_precio?: string;
+  activo?: boolean;
 }
 
 export async function actualizar(req: Request, id: bigint, input: ActualizarInput) {
@@ -184,6 +185,7 @@ export async function actualizar(req: Request, id: bigint, input: ActualizarInpu
         stockCritico: input.stock_critico != null ? D(input.stock_critico) : undefined,
         diasVencimientoAlerta: input.dias_vencimiento_alerta,
         observaciones: input.observaciones,
+        activo: input.activo,
       },
     });
 
@@ -204,12 +206,15 @@ export async function actualizar(req: Request, id: bigint, input: ActualizarInpu
     return updated;
   });
 
+  const accion =
+    input.activo === false ? 'DESACTIVAR' : input.activo === true && !actual.activo ? 'ACTIVAR' : 'EDITAR';
+
   await audit(req, {
-    accion: 'EDITAR',
+    accion,
     modulo: 'inventario',
     tablaAfectada: 'insumos',
     registroId: id,
-    valoresAnteriores: { precio_unitario: actual.precioUnitario },
+    valoresAnteriores: { precio_unitario: actual.precioUnitario, activo: actual.activo },
     valoresNuevos: input,
   });
 

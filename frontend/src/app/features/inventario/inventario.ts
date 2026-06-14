@@ -4,6 +4,8 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime } from 'rxjs';
 import { InsumoService } from '../../core/services/insumo.service';
 import { AuthService } from '../../core/services/auth.service';
+import { ToastService } from '../../shared/ui/toast.service';
+import { ConfirmService } from '../../shared/ui/confirm.service';
 import { InsumoListItem } from '../../core/models/insumo.model';
 import { MovimientoDialog } from './movimiento-dialog';
 import { InsumoFormDialog } from './insumo-form-dialog';
@@ -46,6 +48,17 @@ import { Paginator } from '../../shared/ui/paginator';
         <span class="material-icons text-[20px]">warning</span>
         {{ soloStockBajo() ? 'Mostrando alertas' : 'Solo stock bajo' }}
       </button>
+      @if (puedeEditar()) {
+        <button
+          class="btn"
+          [class.btn-primary]="mostrarInactivos()"
+          [class.btn-outline]="!mostrarInactivos()"
+          (click)="toggleInactivos()"
+        >
+          <span class="material-icons text-[20px]">visibility_off</span>
+          {{ mostrarInactivos() ? 'Mostrando inactivos' : 'Mostrar inactivos' }}
+        </button>
+      }
     </div>
 
     <!-- Tabla -->
@@ -61,29 +74,53 @@ import { Paginator } from '../../shared/ui/paginator';
             <tr>
               <th>Código</th><th>Nombre</th><th>Categoría</th><th>Stock</th>
               <th>Estado</th><th class="text-right">Costo unit.</th>
-              @if (puedeMover()) { <th class="text-right">Acciones</th> }
+              @if (puedeMover() || puedeEditar()) { <th class="text-right">Acciones</th> }
             </tr>
           </thead>
           <tbody>
             @for (i of insumos(); track i.id) {
-              <tr>
+              <tr [class.opacity-50]="!i.activo">
                 <td class="font-mono text-xs text-slate-500">{{ i.codigo }}</td>
-                <td class="font-medium text-slate-800">{{ i.nombre }}</td>
+                <td class="font-medium text-slate-800">
+                  {{ i.nombre }}
+                  @if (!i.activo) {
+                    <span class="badge badge-neutral ml-2 text-[10px]">Inactivo</span>
+                  }
+                </td>
                 <td><span class="badge badge-neutral">{{ i.categoria }}</span></td>
                 <td>{{ i.stock_actual | number: '1.0-2' }} {{ i.unidad_medida }}</td>
                 <td><span class="badge badge-{{ i.estado_stock.toLowerCase() }}">{{ i.estado_stock }}</span></td>
                 <td class="text-right tabular-nums">\${{ i.costo_actual | number: '1.2-2' }}</td>
-                @if (puedeMover()) {
+                @if (puedeMover() || puedeEditar()) {
                   <td>
                     <div class="flex justify-end gap-1">
-                      <button class="btn-icon rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-                        title="Ingreso" (click)="abrir(i, 'ingreso')">
-                        <span class="material-icons text-[20px]">add</span>
-                      </button>
-                      <button class="btn-icon rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100"
-                        title="Egreso" (click)="abrir(i, 'egreso')">
-                        <span class="material-icons text-[20px]">remove</span>
-                      </button>
+                      @if (puedeMover() && i.activo) {
+                        <button class="btn-icon rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                          title="Ingreso" (click)="abrir(i, 'ingreso')">
+                          <span class="material-icons text-[20px]">add</span>
+                        </button>
+                        <button class="btn-icon rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100"
+                          title="Egreso" (click)="abrir(i, 'egreso')">
+                          <span class="material-icons text-[20px]">remove</span>
+                        </button>
+                      }
+                      @if (puedeEditar()) {
+                        <button class="btn-icon rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200"
+                          title="Editar" (click)="editando.set(i)">
+                          <span class="material-icons text-[20px]">edit</span>
+                        </button>
+                        @if (i.activo) {
+                          <button class="btn-icon rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100"
+                            title="Desactivar" (click)="toggleActivo(i)">
+                            <span class="material-icons text-[20px]">block</span>
+                          </button>
+                        } @else {
+                          <button class="btn-icon rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                            title="Activar" (click)="toggleActivo(i)">
+                            <span class="material-icons text-[20px]">check_circle</span>
+                          </button>
+                        }
+                      }
                     </div>
                   </td>
                 }
@@ -111,8 +148,8 @@ import { Paginator } from '../../shared/ui/paginator';
         (closed)="movimiento.set(null)"
       />
     }
-    @if (mostrarNuevo()) {
-      <app-insumo-form-dialog (saved)="onSaved()" (closed)="mostrarNuevo.set(false)" />
+    @if (mostrarNuevo() || editando()) {
+      <app-insumo-form-dialog [insumo]="editando()" (saved)="onSaved()" (closed)="cerrarForm()" />
     }
   `,
   styles: `
@@ -122,6 +159,8 @@ import { Paginator } from '../../shared/ui/paginator';
 export class Inventario implements OnInit {
   private service = inject(InsumoService);
   private auth = inject(AuthService);
+  private toast = inject(ToastService);
+  private confirm = inject(ConfirmService);
 
   readonly insumos = signal<InsumoListItem[]>([]);
   readonly categorias = signal<string[]>([]);
@@ -130,14 +169,17 @@ export class Inventario implements OnInit {
   readonly page = signal(1);
   readonly limit = signal(10);
   readonly soloStockBajo = signal(false);
+  readonly mostrarInactivos = signal(false);
 
   readonly movimiento = signal<{ insumo: InsumoListItem; tipo: 'ingreso' | 'egreso' } | null>(null);
   readonly mostrarNuevo = signal(false);
+  readonly editando = signal<InsumoListItem | null>(null);
 
   readonly searchCtrl = new FormControl('', { nonNullable: true });
   readonly categoriaCtrl = new FormControl('', { nonNullable: true });
 
   readonly puedeMover = computed(() => this.auth.hasRole('GERENTE', 'OPERARIO'));
+  readonly puedeEditar = computed(() => this.auth.hasRole('GERENTE'));
 
   ngOnInit() {
     this.cargar();
@@ -162,6 +204,7 @@ export class Inventario implements OnInit {
         search: this.searchCtrl.value || undefined,
         categoria: this.categoriaCtrl.value || undefined,
         stock_bajo: this.soloStockBajo() || undefined,
+        activos_solo: this.mostrarInactivos() ? false : undefined,
       })
       .subscribe({
         next: (res) => {
@@ -184,13 +227,43 @@ export class Inventario implements OnInit {
     this.cargar();
   }
 
+  toggleInactivos() {
+    this.mostrarInactivos.update((v) => !v);
+    this.page.set(1);
+    this.cargar();
+  }
+
   abrir(insumo: InsumoListItem, tipo: 'ingreso' | 'egreso') {
     this.movimiento.set({ insumo, tipo });
   }
 
+  async toggleActivo(i: InsumoListItem) {
+    const activar = !i.activo;
+    const ok = await this.confirm.confirm({
+      title: activar ? `Activar ${i.nombre}` : `Desactivar ${i.nombre}`,
+      message: activar
+        ? 'El insumo volverá a aparecer en los listados y se podrán registrar ingresos/egresos.'
+        : 'El insumo dejará de aparecer en el inventario y no se podrán registrar ingresos/egresos. Las recetas existentes no se modifican.',
+      tone: activar ? 'primary' : 'danger',
+      icon: activar ? 'check_circle' : 'block',
+      confirmText: activar ? 'Activar' : 'Desactivar',
+    });
+    if (!ok) return;
+
+    this.service.actualizar(i.id, { activo: activar }).subscribe(() => {
+      this.toast.success(activar ? 'Insumo activado' : 'Insumo desactivado');
+      this.cargar();
+    });
+  }
+
+  cerrarForm() {
+    this.mostrarNuevo.set(false);
+    this.editando.set(null);
+  }
+
   onSaved() {
     this.movimiento.set(null);
-    this.mostrarNuevo.set(false);
+    this.cerrarForm();
     this.cargar();
   }
 }

@@ -165,6 +165,7 @@ export class Layout implements OnInit {
     { label: 'Dashboard', icon: 'dashboard', route: '/dashboard', section: 'General' },
     { label: 'Inventario', icon: 'inventory_2', route: '/inventario', roles: ['GERENTE', 'OPERARIO'], section: 'Operaciones' },
     { label: 'Producción', icon: 'precision_manufacturing', route: '/produccion', roles: ['GERENTE', 'OPERARIO'], section: 'Operaciones' },
+    { label: 'Productos', icon: 'category', route: '/productos', roles: ['GERENTE'], section: 'Operaciones' },
     { label: 'Pedido diario', icon: 'edit_note', route: '/pedidos', roles: ['GERENTE', 'OPERARIO'], section: 'Comercial' },
     { label: 'Ventas', icon: 'point_of_sale', route: '/ventas', roles: ['GERENTE'], section: 'Comercial' },
     { label: 'Clientes', icon: 'storefront', route: '/clientes', roles: ['GERENTE'], section: 'Comercial' },

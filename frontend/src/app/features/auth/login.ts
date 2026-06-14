@@ -86,10 +86,10 @@ import { AuthService } from '../../core/services/auth.service';
               {{ loading() ? 'Ingresando…' : 'Ingresar' }}
             </button>
           </form>
-
+<!-- 
           <p class="mt-6 rounded-lg bg-slate-50 px-3 py-2 text-center text-xs text-slate-500">
             Demo: <b>admin</b> / Admin123! · <b>operario</b> / Operario123!
-          </p>
+          </p> -->
         </div>
       </div>
     </div>

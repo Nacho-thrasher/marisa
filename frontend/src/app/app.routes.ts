@@ -29,6 +29,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/produccion/produccion').then((m) => m.Produccion),
       },
       {
+        path: 'productos',
+        canActivate: [roleGuard],
+        data: { roles: ['GERENTE'] },
+        loadComponent: () => import('./features/productos/productos').then((m) => m.Productos),
+      },
+      {
         path: 'ventas',
         canActivate: [roleGuard],
         data: { roles: ['GERENTE'] },

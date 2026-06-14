@@ -13,7 +13,7 @@ vendedores, nómina y auditoría.
 
 1. Abrí la dirección del sistema en el navegador (Chrome, Edge o similar).
    - En desarrollo local: `http://localhost:4200`
-   - En producción: la URL que les pasemos (Vercel).
+   - En producción: https://marisa-tau.vercel.app
 2. Ingresá **usuario** y **contraseña**.
 3. El menú de la izquierda muestra **solo los módulos de tu rol**.
 
@@ -21,10 +21,12 @@ Para salir: botón **Salir** arriba a la derecha.
 
 ---
 
-## 2. Usuarios demo
+## 2. Usuarios y accesos
 
-Estos usuarios vienen cargados para probar. **En producción conviene cambiar las
-contraseñas y crear los usuarios reales de cada persona.**
+### 2.1 Usuarios demo (entorno de prueba)
+
+Estos usuarios vienen cargados para probar. **En producción no existen**: la base
+arranca con un solo administrador (ver 2.2).
 
 | Usuario    | Contraseña     | Rol      | Para quién |
 |------------|----------------|----------|------------|
@@ -35,6 +37,13 @@ contraseñas y crear los usuarios reales de cada persona.**
 | `contador` | `Contador123!` | CONTADOR | Contador: reportes y auditoría (solo lectura). |
 
 > La contraseña tiene mayúscula, minúscula, número y un signo (`!`).
+
+### 2.2 En producción
+
+La base real arranca con **un solo usuario ADMIN**. Desde ahí, el administrador
+entra a **Usuarios** (menú → Administración) y crea una cuenta para cada persona,
+con el rol que le corresponde (ver tabla de la sección 3). Cada persona debe tener
+su propio usuario: así la auditoría queda prolija y se puede saber quién hizo qué.
 
 ---
 
@@ -51,6 +60,7 @@ contraseñas y crear los usuarios reales de cada persona.**
 | Reporte mensual | ✔ | ✔ | | | ✔ |
 | Nómina | ✔ | | | ✔ | |
 | Auditoría | ✔ | | | | ✔ |
+| Usuarios | ✔ | | | | |
 
 (ADMIN tiene acceso a todo.)
 
@@ -134,6 +144,18 @@ Tres pestañas:
 Registro de **todo lo que pasó**: quién hizo qué, cuándo y desde dónde. Se filtra
 por módulo y acción, y cada registro muestra los valores anteriores y nuevos.
 
+### 4.10 Usuarios (solo ADMIN)
+Pantalla para administrar las cuentas de acceso (menú → **Administración → Usuarios**).
+
+- **Nuevo usuario**: usuario, email, contraseña y **rol** (ADMIN, GERENTE,
+  OPERARIO, RRHH o CONTADOR).
+- **Editar**: cambiar email o rol, y **activar/desactivar** la cuenta. Una cuenta
+  desactivada no puede iniciar sesión.
+- **Restablecer contraseña**: le asigna una contraseña nueva a esa cuenta (se la
+  pasás a la persona).
+- Por seguridad, el sistema **no permite**: desactivarte a vos mismo, sacarte el
+  rol ADMIN a vos mismo, ni dejar el sistema sin ningún administrador activo.
+
 ---
 
 ## 5. Listas de precios
@@ -175,7 +197,8 @@ acceso, pedíselo al administrador.
 **La descarga baja con un nombre raro / no abre.** Ya está resuelto; si pasara,
 actualizá la página (Ctrl+F5) y volvé a intentar.
 
-**Me olvidé la contraseña.** El administrador puede regenerar el usuario.
+**Me olvidé la contraseña.** El administrador entra a **Usuarios** (menú →
+Administración) y usa **Restablecer contraseña** para darte una nueva.
 
 **¿Los datos están seguros?** Sí: contraseñas encriptadas, acceso por rol y
 auditoría de todas las operaciones.

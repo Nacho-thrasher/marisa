@@ -25,10 +25,10 @@ export async function obtener(req: Request, res: Response) {
 }
 
 const crearSchema = z.object({
-  codigo: z.string().min(1).max(50),
-  nombre: z.string().min(1).max(150),
+  codigo: z.string().min(1).max(50).trim(),
+  nombre: z.string().min(1).max(150).trim(),
   descripcion: z.string().optional(),
-  categoria: z.string().min(1).max(100),
+  categoria: z.string().min(1).max(100).trim(),
   unidad_medida: z.string().min(1).max(20),
   precio_unitario: z.number().nonnegative(),
   stock_minimo: z.number().nonnegative().optional(),
@@ -44,9 +44,9 @@ export async function crear(req: Request, res: Response) {
 }
 
 const actualizarSchema = z.object({
-  nombre: z.string().min(1).max(150).optional(),
+  nombre: z.string().min(1).max(150).trim().optional(),
   descripcion: z.string().optional(),
-  categoria: z.string().min(1).max(100).optional(),
+  categoria: z.string().min(1).max(100).trim().optional(),
   unidad_medida: z.string().min(1).max(20).optional(),
   precio_unitario: z.number().nonnegative().optional(),
   stock_minimo: z.number().nonnegative().optional(),
@@ -54,6 +54,7 @@ const actualizarSchema = z.object({
   dias_vencimiento_alerta: z.number().int().nonnegative().optional(),
   observaciones: z.string().optional(),
   razon_cambio_precio: z.string().optional(),
+  activo: z.boolean().optional(),
 });
 
 export async function actualizar(req: Request, res: Response) {

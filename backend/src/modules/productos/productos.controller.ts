@@ -27,12 +27,16 @@ export async function receta(req: Request, res: Response) {
 }
 
 const crearSchema = z.object({
-  codigo: z.string().min(1).max(50),
-  nombre: z.string().min(1).max(150),
+  codigo: z.string().min(1).max(50).trim(),
+  nombre: z.string().min(1).max(150).trim(),
   descripcion: z.string().optional(),
-  categoria: z.string().min(1).max(100),
+  categoria: z.string().min(1).max(100).trim(),
   peso_gramos: z.number().int().positive().optional(),
   precio_venta: z.number().nonnegative().optional(),
+  precio_mayorista: z.number().nonnegative().optional(),
+  precio_revendedor: z.number().nonnegative().optional(),
+  precio_comercio: z.number().nonnegative().optional(),
+  precio_publico: z.number().nonnegative().optional(),
 });
 
 export async function crear(req: Request, res: Response) {
@@ -61,7 +65,12 @@ export async function crearReceta(req: Request, res: Response) {
   return created(res, await service.crearReceta(req, BigInt(req.params.id), input));
 }
 
-const preciosSchema = z.object({
+const actualizarSchema = z.object({
+  nombre: z.string().min(1).max(150).trim().optional(),
+  descripcion: z.string().optional(),
+  categoria: z.string().min(1).max(100).trim().optional(),
+  peso_gramos: z.number().int().positive().optional(),
+  activo: z.boolean().optional(),
   precio_venta: z.number().nonnegative().optional(),
   precio_mayorista: z.number().nonnegative().optional(),
   precio_revendedor: z.number().nonnegative().optional(),
@@ -69,9 +78,9 @@ const preciosSchema = z.object({
   precio_publico: z.number().nonnegative().optional(),
 });
 
-export async function actualizarPrecios(req: Request, res: Response) {
-  const input = preciosSchema.parse(req.body);
-  return ok(res, await service.actualizarPrecios(req, BigInt(req.params.id), input));
+export async function actualizar(req: Request, res: Response) {
+  const input = actualizarSchema.parse(req.body);
+  return ok(res, await service.actualizar(req, BigInt(req.params.id), input));
 }
 
 const simularSchema = z.object({

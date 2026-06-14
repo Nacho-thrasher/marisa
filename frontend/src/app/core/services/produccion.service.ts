@@ -9,6 +9,7 @@ export interface Producto {
   id: number;
   codigo: string;
   nombre: string;
+  descripcion: string | null;
   categoria: string;
   pesoGramos: number | null;
   costoPromedio: string | null;

@@ -1,7 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { ApiResponse } from '../models/api.model';
+import { ApiResponse, PaginatedResponse } from '../models/api.model';
+import { Producto } from './produccion.service';
 import { skipErrorToast } from '../interceptors/error.interceptor';
 
 export interface RecetaInsumo {
@@ -39,10 +41,51 @@ export interface CrearRecetaBody {
   }[];
 }
 
+export interface ListarProductosQuery {
+  page?: number;
+  limit?: number;
+  search?: string;
+  categoria?: string;
+  activos_solo?: boolean;
+}
+
+export interface CrearProductoInput {
+  codigo: string;
+  nombre: string;
+  descripcion?: string;
+  categoria: string;
+  peso_gramos?: number;
+  precio_venta?: number;
+  precio_mayorista?: number;
+  precio_revendedor?: number;
+  precio_comercio?: number;
+  precio_publico?: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ProductosService {
   private http = inject(HttpClient);
   private base = `${environment.apiUrl}/productos`;
+
+  listar(q: ListarProductosQuery = {}): Observable<PaginatedResponse<Producto>> {
+    let params = new HttpParams();
+    Object.entries(q).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== '') params = params.set(k, String(v));
+    });
+    return this.http.get<PaginatedResponse<Producto>>(this.base, { params });
+  }
+
+  crear(input: CrearProductoInput) {
+    return this.http.post<ApiResponse<unknown>>(this.base, input);
+  }
+
+  actualizar(id: number, input: Partial<CrearProductoInput> & { activo?: boolean }) {
+    return this.http.patch<ApiResponse<unknown>>(`${this.base}/${id}`, input);
+  }
+
+  categorias() {
+    return this.http.get<ApiResponse<string[]>>(`${this.base}/categorias`);
+  }
 
   /** Obtiene la receta activa. `silent` evita el toast global si no existe (404). */
   obtenerReceta(productoId: number, silent = false) {
