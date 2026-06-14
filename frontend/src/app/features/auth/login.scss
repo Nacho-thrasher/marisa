@@ -1,0 +1,58 @@
+.login-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+  padding: 16px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  overflow: hidden;
+}
+
+.logo {
+  display: flex;
+  justify-content: center;
+  margin: 12px 0;
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: var(--brand);
+  }
+}
+
+h1 {
+  text-align: center;
+  font-size: 20px;
+  margin: 0 0 4px;
+}
+
+.subtitle {
+  text-align: center;
+  color: #666;
+  margin: 0 0 20px;
+  font-size: 14px;
+}
+
+.submit {
+  margin-top: 8px;
+  height: 44px;
+}
+
+.error {
+  color: var(--critico);
+  font-size: 14px;
+  margin: 4px 0;
+}
+
+.hint {
+  text-align: center;
+  color: #999;
+  font-size: 12px;
+  margin-top: 16px;
+}

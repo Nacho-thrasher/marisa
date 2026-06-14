@@ -1,0 +1,38 @@
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.kpi {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+
+  mat-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    color: var(--brand);
+  }
+
+  .value {
+    font-size: 26px;
+    font-weight: 600;
+  }
+
+  .label {
+    color: #666;
+    font-size: 13px;
+  }
+
+  &.warn mat-icon { color: var(--bajo); }
+  &.danger mat-icon { color: var(--critico); }
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+}

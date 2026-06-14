@@ -1,0 +1,51 @@
+<h2 class="page-title">Hola, {{ user()?.username }} 👋</h2>
+
+@if (loading()) {
+  <mat-spinner diameter="36" />
+} @else if (resumen(); as r) {
+  <div class="cards">
+    <mat-card class="kpi">
+      <mat-icon>inventory_2</mat-icon>
+      <div>
+        <div class="value">{{ r.total_insumos }}</div>
+        <div class="label">Insumos activos</div>
+      </div>
+    </mat-card>
+
+    <mat-card class="kpi">
+      <mat-icon>payments</mat-icon>
+      <div>
+        <div class="value">$ {{ r.valor_total_stock | number: '1.0-0' }}</div>
+        <div class="label">Valor del stock</div>
+      </div>
+    </mat-card>
+
+    <mat-card class="kpi warn">
+      <mat-icon>warning</mat-icon>
+      <div>
+        <div class="value">{{ r.insumos_alerta }}</div>
+        <div class="label">Stock bajo</div>
+      </div>
+    </mat-card>
+
+    <mat-card class="kpi danger">
+      <mat-icon>error</mat-icon>
+      <div>
+        <div class="value">{{ r.insumos_criticos }}</div>
+        <div class="label">Stock crítico</div>
+      </div>
+    </mat-card>
+  </div>
+
+  <div class="actions">
+    <a mat-flat-button color="primary" routerLink="/inventario">
+      <mat-icon>list</mat-icon> Ir al inventario
+    </a>
+  </div>
+} @else {
+  <mat-card>
+    <mat-card-content>
+      <p>Bienvenido al sistema. Usá el menú lateral para navegar a tu módulo.</p>
+    </mat-card-content>
+  </mat-card>
+}
