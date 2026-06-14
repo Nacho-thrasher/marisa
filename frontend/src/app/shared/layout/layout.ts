@@ -46,7 +46,7 @@ interface NavItem {
 
         <div class="border-t border-white/10 p-3">
           <div class="flex items-center gap-3 rounded-xl px-3 py-2">
-            <div class="grid h-9 w-9 place-items-center rounded-full bg-white/20 text-sm font-bold text-white">
+            <div class="grid h-9 w-9 place-items-center rounded-md bg-white/20 text-sm font-bold text-white">
               {{ inicial() }}
             </div>
             <div class="min-w-0 flex-1 leading-tight">
