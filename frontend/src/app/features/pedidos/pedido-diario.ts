@@ -49,35 +49,37 @@ interface Fila {
 
     <!-- Grilla de productos -->
     <div class="card overflow-hidden">
-      <table class="table">
-        <thead>
-          <tr><th>Producto</th><th class="text-right">Precio</th><th class="w-32 text-center">Cantidad</th><th class="text-right">Subtotal</th></tr>
-        </thead>
-        <tbody>
-          @for (f of filas(); track f.producto.id) {
-            <tr [class.bg-brand-50]="(f.cantidad ?? 0) > 0">
-              <td class="font-medium text-slate-800">{{ f.producto.nombre }}</td>
-              <td class="text-right tabular-nums text-slate-500">\${{ precio(f.producto) | number: '1.0-2' }}</td>
-              <td class="text-center">
-                <input
-                  class="input w-24 text-center"
-                  type="number"
-                  min="0"
-                  [(ngModel)]="f.cantidad"
-                  (ngModelChange)="recalcular()"
-                />
-              </td>
-              <td class="text-right font-medium tabular-nums">
-                {{ (f.cantidad ?? 0) > 0 ? '$' + (precio(f.producto) * (f.cantidad ?? 0) | number: '1.0-2') : '—' }}
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+      <div class="overflow-x-auto">
+        <table class="table">
+          <thead>
+            <tr><th>Producto</th><th class="text-right">Precio</th><th class="w-32 text-center">Cantidad</th><th class="text-right">Subtotal</th></tr>
+          </thead>
+          <tbody>
+            @for (f of filas(); track f.producto.id) {
+              <tr [class.bg-brand-50]="(f.cantidad ?? 0) > 0">
+                <td class="font-medium text-slate-800">{{ f.producto.nombre }}</td>
+                <td class="text-right tabular-nums text-slate-500">\${{ precio(f.producto) | number: '1.0-2' }}</td>
+                <td class="text-center">
+                  <input
+                    class="input w-24 text-center"
+                    type="number"
+                    min="0"
+                    [(ngModel)]="f.cantidad"
+                    (ngModelChange)="recalcular()"
+                  />
+                </td>
+                <td class="text-right font-medium tabular-nums">
+                  {{ (f.cantidad ?? 0) > 0 ? '$' + (precio(f.producto) * (f.cantidad ?? 0) | number: '1.0-2') : '—' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Barra de total -->
-    <div class="sticky bottom-0 mt-4 flex items-center justify-between rounded-md border border-slate-200 bg-white p-4 shadow-lg">
+    <div class="sticky bottom-0 mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-slate-200 bg-white p-4 shadow-lg">
       <div>
         <span class="text-sm text-slate-500">{{ itemsCargados() }} productos · </span>
         <span class="text-lg font-bold text-slate-900">Total: \${{ total() | number: '1.0-2' }}</span>

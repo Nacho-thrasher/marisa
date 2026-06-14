@@ -9,7 +9,7 @@ import { Modal } from '../../shared/ui/modal';
   imports: [ReactiveFormsModule, Modal],
   template: `
     <app-modal title="Nuevo insumo" [wide]="true" (closed)="closed.emit()">
-      <form [formGroup]="form" class="grid grid-cols-2 gap-4">
+      <form [formGroup]="form" class="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label class="label">Código</label>
           <input class="input" formControlName="codigo" placeholder="PAPA-002" />

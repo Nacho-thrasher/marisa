@@ -45,10 +45,12 @@ type FiltroEstado = '' | 'PLANIFICADA' | 'EN_PROCESO' | 'COMPLETADA';
     </div>
 
     <!-- Filtro por estado -->
-    <div class="tabs mb-4">
-      @for (f of filtros; track f.id) {
-        <button class="tab" [class.tab-active]="filtro() === f.id" (click)="filtrar(f.id)">{{ f.label }}</button>
-      }
+    <div class="mb-4 overflow-x-auto">
+      <div class="tabs">
+        @for (f of filtros; track f.id) {
+          <button class="tab" [class.tab-active]="filtro() === f.id" (click)="filtrar(f.id)">{{ f.label }}</button>
+        }
+      </div>
     </div>
 
     <div class="card overflow-hidden">
@@ -161,23 +163,25 @@ type FiltroEstado = '' | 'PLANIFICADA' | 'EN_PROCESO' | 'COMPLETADA';
 
         @if (preview().length) {
           <div class="mt-4 overflow-hidden rounded-xl border border-slate-200">
-            <table class="table">
-              <thead><tr><th>Insumo</th><th>Requerido</th><th>Disponible</th><th>Estado</th></tr></thead>
-              <tbody>
-                @for (i of preview(); track i.insumo_id) {
-                  <tr>
-                    <td class="font-medium text-slate-800">{{ i.nombre }}</td>
-                    <td>{{ i.cantidad | number: '1.0-2' }} {{ i.unidad }}</td>
-                    <td>{{ i.stock_disponible | number: '1.0-2' }}</td>
-                    <td>
-                      <span class="badge" [class]="i.suficiente ? 'badge-ok' : 'badge-critico'">
-                        {{ i.suficiente ? 'OK' : 'Insuficiente' }}
-                      </span>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
+            <div class="overflow-x-auto">
+              <table class="table">
+                <thead><tr><th>Insumo</th><th>Requerido</th><th>Disponible</th><th>Estado</th></tr></thead>
+                <tbody>
+                  @for (i of preview(); track i.insumo_id) {
+                    <tr>
+                      <td class="font-medium text-slate-800">{{ i.nombre }}</td>
+                      <td>{{ i.cantidad | number: '1.0-2' }} {{ i.unidad }}</td>
+                      <td>{{ i.stock_disponible | number: '1.0-2' }}</td>
+                      <td>
+                        <span class="badge" [class]="i.suficiente ? 'badge-ok' : 'badge-critico'">
+                          {{ i.suficiente ? 'OK' : 'Insuficiente' }}
+                        </span>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
           </div>
           <p class="mt-3 text-right text-sm text-slate-600">
             Costo estimado: <b class="text-slate-900">\${{ costoEstimado() | number: '1.0-2' }}</b>
@@ -217,8 +221,8 @@ type FiltroEstado = '' | 'PLANIFICADA' | 'EN_PROCESO' | 'COMPLETADA';
         <p class="mt-5 mb-2 text-sm font-semibold text-slate-700">Insumos de la receta</p>
         <div class="space-y-2">
           @for (l of recetaLineas(); track $index) {
-            <div class="grid grid-cols-12 items-center gap-2">
-              <div class="col-span-5">
+            <div class="grid grid-cols-1 gap-2 rounded-xl bg-slate-50 p-2 sm:grid-cols-12 sm:items-center sm:rounded-none sm:bg-transparent sm:p-0">
+              <div class="sm:col-span-5">
                 <select class="select" [(ngModel)]="l.insumo_id" (ngModelChange)="onInsumoReceta(l)">
                   <option [ngValue]="null" disabled>Insumo…</option>
                   @for (ins of insumos(); track ins.id) {
@@ -226,15 +230,11 @@ type FiltroEstado = '' | 'PLANIFICADA' | 'EN_PROCESO' | 'COMPLETADA';
                   }
                 </select>
               </div>
-              <div class="col-span-3">
-                <input class="input" type="number" min="0" step="any" placeholder="Cantidad" [(ngModel)]="l.cantidad_requerida" />
-              </div>
-              <div class="col-span-2 text-sm text-slate-500">{{ l.unidad_medida || '—' }}</div>
-              <div class="col-span-1">
-                <input class="input px-2 text-center" type="number" min="0" step="any" title="Merma %" [(ngModel)]="l.porcentaje_merma" />
-              </div>
-              <div class="col-span-1 text-right">
-                <button class="btn-ghost btn-icon text-rose-500" (click)="quitarLineaReceta($index)">
+              <div class="flex items-center gap-2 sm:contents">
+                <input class="input min-w-0 flex-1 sm:col-span-3" type="number" min="0" step="any" placeholder="Cantidad" [(ngModel)]="l.cantidad_requerida" />
+                <div class="shrink-0 text-sm text-slate-500 sm:col-span-2">{{ l.unidad_medida || '—' }}</div>
+                <input class="input w-14 shrink-0 px-2 text-center sm:col-span-1 sm:w-full" type="number" min="0" step="any" title="Merma %" [(ngModel)]="l.porcentaje_merma" />
+                <button class="btn-ghost btn-icon shrink-0 text-rose-500 sm:col-span-1 sm:justify-self-end" (click)="quitarLineaReceta($index)">
                   <span class="material-icons text-[18px]">delete</span>
                 </button>
               </div>
@@ -269,22 +269,24 @@ type FiltroEstado = '' | 'PLANIFICADA' | 'EN_PROCESO' | 'COMPLETADA';
         </div>
         <p class="mb-2 text-sm font-semibold text-slate-700">Consumo real de insumos</p>
         <div class="overflow-hidden rounded-xl border border-slate-200">
-          <table class="table">
-            <thead><tr><th>Insumo</th><th class="text-right">Previsto</th><th class="text-right">Real</th><th class="text-right">Δ</th><th class="text-right">Costo</th></tr></thead>
-            <tbody>
-              @for (c of d.consumo_real; track c.insumo) {
-                <tr>
-                  <td class="font-medium text-slate-800">{{ c.insumo }}</td>
-                  <td class="text-right tabular-nums">{{ c.cantidad_prevista | number: '1.0-2' }}</td>
-                  <td class="text-right tabular-nums">{{ c.cantidad_utilizada | number: '1.0-2' }}</td>
-                  <td class="text-right tabular-nums" [class]="num(c.diferencia) > 0 ? 'text-rose-600' : 'text-emerald-600'">
-                    {{ num(c.diferencia) > 0 ? '+' : '' }}{{ c.diferencia | number: '1.0-2' }}
-                  </td>
-                  <td class="text-right tabular-nums text-slate-500">\${{ c.costo_total | number: '1.0-2' }}</td>
-                </tr>
-              }
-            </tbody>
-          </table>
+          <div class="overflow-x-auto">
+            <table class="table">
+              <thead><tr><th>Insumo</th><th class="text-right">Previsto</th><th class="text-right">Real</th><th class="text-right">Δ</th><th class="text-right">Costo</th></tr></thead>
+              <tbody>
+                @for (c of d.consumo_real; track c.insumo) {
+                  <tr>
+                    <td class="font-medium text-slate-800">{{ c.insumo }}</td>
+                    <td class="text-right tabular-nums">{{ c.cantidad_prevista | number: '1.0-2' }}</td>
+                    <td class="text-right tabular-nums">{{ c.cantidad_utilizada | number: '1.0-2' }}</td>
+                    <td class="text-right tabular-nums" [class]="num(c.diferencia) > 0 ? 'text-rose-600' : 'text-emerald-600'">
+                      {{ num(c.diferencia) > 0 ? '+' : '' }}{{ c.diferencia | number: '1.0-2' }}
+                    </td>
+                    <td class="text-right tabular-nums text-slate-500">\${{ c.costo_total | number: '1.0-2' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
         </div>
         <div modal-footer><button class="btn btn-primary" (click)="detalle.set(null)">Cerrar</button></div>
       </app-modal>
@@ -293,7 +295,7 @@ type FiltroEstado = '' | 'PLANIFICADA' | 'EN_PROCESO' | 'COMPLETADA';
     <!-- Modal completar -->
     @if (completarOrden(); as ord) {
       <app-modal [title]="'Completar — ' + ord.numero_orden" [wide]="true" (closed)="completarOrden.set(null)">
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label class="label">Cantidad producida</label>
             <input class="input" type="number" min="0" [(ngModel)]="producida" />

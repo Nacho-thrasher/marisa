@@ -22,12 +22,14 @@ type Tab = 'liquidaciones' | 'empleados' | 'aportes';
     <p class="page-subtitle">Empleados, liquidaciones de sueldo y aportes.</p>
 
     <!-- Tabs -->
-    <div class="tabs mb-5">
-      @for (t of tabs; track t.id) {
-        <button class="tab" [class.tab-active]="tab() === t.id" (click)="tab.set(t.id)">
-          {{ t.label }}
-        </button>
-      }
+    <div class="mb-5 overflow-x-auto">
+      <div class="tabs">
+        @for (t of tabs; track t.id) {
+          <button class="tab" [class.tab-active]="tab() === t.id" (click)="tab.set(t.id)">
+            {{ t.label }}
+          </button>
+        }
+      </div>
     </div>
 
     <!-- LIQUIDACIONES -->
@@ -38,25 +40,27 @@ type Tab = 'liquidaciones' | 'empleados' | 'aportes';
         </button>
       </div>
       <div class="card overflow-hidden">
-        <table class="table">
-          <thead><tr><th>N° nómina</th><th>Período</th><th>Empleados</th><th class="text-right">Neto total</th><th>Estado</th><th class="text-right">Recibos</th></tr></thead>
-          <tbody>
-            @for (n of nominas(); track n.nomina_id) {
-              <tr>
-                <td class="font-mono text-xs text-slate-500">{{ n.numero_nomina }}</td>
-                <td class="font-medium text-slate-800">{{ n.periodo }}</td>
-                <td>{{ n.cantidad_empleados }}</td>
-                <td class="text-right tabular-nums">\${{ n.total_neto | number: '1.0-2' }}</td>
-                <td><span class="badge badge-ok">{{ n.estado }}</span></td>
-                <td class="text-right">
-                  <button class="btn btn-soft px-3 py-1.5 text-xs" (click)="verRecibos(n)">
-                    <span class="material-icons text-[16px]">receipt_long</span> Ver
-                  </button>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+        <div class="overflow-x-auto">
+          <table class="table">
+            <thead><tr><th>N° nómina</th><th>Período</th><th>Empleados</th><th class="text-right">Neto total</th><th>Estado</th><th class="text-right">Recibos</th></tr></thead>
+            <tbody>
+              @for (n of nominas(); track n.nomina_id) {
+                <tr>
+                  <td class="font-mono text-xs text-slate-500">{{ n.numero_nomina }}</td>
+                  <td class="font-medium text-slate-800">{{ n.periodo }}</td>
+                  <td>{{ n.cantidad_empleados }}</td>
+                  <td class="text-right tabular-nums">\${{ n.total_neto | number: '1.0-2' }}</td>
+                  <td><span class="badge badge-ok">{{ n.estado }}</span></td>
+                  <td class="text-right">
+                    <button class="btn btn-soft px-3 py-1.5 text-xs" (click)="verRecibos(n)">
+                      <span class="material-icons text-[16px]">receipt_long</span> Ver
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
         @if (nominas().length === 0) {
           <div class="p-12 text-center text-slate-400"><span class="material-icons mb-2 text-4xl">payments</span><p>No hay liquidaciones procesadas.</p></div>
         }
@@ -71,26 +75,28 @@ type Tab = 'liquidaciones' | 'empleados' | 'aportes';
         </button>
       </div>
       <div class="card overflow-hidden">
-        <table class="table">
-          <thead><tr><th>DNI</th><th>Nombre</th><th>Puesto</th><th>Antigüedad</th><th class="text-right">Sueldo básico</th><th>Estado</th><th></th></tr></thead>
-          <tbody>
-            @for (e of empleados(); track e.id) {
-              <tr>
-                <td class="font-mono text-xs text-slate-500">{{ e.dni }}</td>
-                <td class="font-medium text-slate-800">{{ e.nombre }} {{ e.apellido }}</td>
-                <td>{{ e.puesto }}</td>
-                <td>{{ e.antiguedad_anos }} años</td>
-                <td class="text-right tabular-nums">{{ e.estructura_salarial_actual ? '$' + (e.estructura_salarial_actual.sueldo_basico | number: '1.0-0') : '—' }}</td>
-                <td><span class="badge badge-ok">{{ e.estado }}</span></td>
-                <td class="text-right">
-                  <button class="btn-ghost btn-icon rounded-lg" title="Estructura salarial" (click)="abrirEstructura(e)">
-                    <span class="material-icons text-[20px]">attach_money</span>
-                  </button>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+        <div class="overflow-x-auto">
+          <table class="table">
+            <thead><tr><th>DNI</th><th>Nombre</th><th>Puesto</th><th>Antigüedad</th><th class="text-right">Sueldo básico</th><th>Estado</th><th></th></tr></thead>
+            <tbody>
+              @for (e of empleados(); track e.id) {
+                <tr>
+                  <td class="font-mono text-xs text-slate-500">{{ e.dni }}</td>
+                  <td class="font-medium text-slate-800">{{ e.nombre }} {{ e.apellido }}</td>
+                  <td>{{ e.puesto }}</td>
+                  <td>{{ e.antiguedad_anos }} años</td>
+                  <td class="text-right tabular-nums">{{ e.estructura_salarial_actual ? '$' + (e.estructura_salarial_actual.sueldo_basico | number: '1.0-0') : '—' }}</td>
+                  <td><span class="badge badge-ok">{{ e.estado }}</span></td>
+                  <td class="text-right">
+                    <button class="btn-ghost btn-icon rounded-lg" title="Estructura salarial" (click)="abrirEstructura(e)">
+                      <span class="material-icons text-[20px]">attach_money</span>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
         @if (empleados().length === 0) {
           <div class="p-12 text-center text-slate-400"><span class="material-icons mb-2 text-4xl">groups</span><p>Sin empleados.</p></div>
         }
@@ -100,33 +106,35 @@ type Tab = 'liquidaciones' | 'empleados' | 'aportes';
     <!-- APORTES -->
     @if (tab() === 'aportes') {
       <div class="card overflow-hidden">
-        <table class="table">
-          <thead><tr><th>Concepto</th><th>Tipo</th><th>Vigente desde</th><th class="text-right">Porcentaje</th><th></th></tr></thead>
-          <tbody>
-            @for (a of aportes(); track a.id) {
-              <tr>
-                <td class="font-medium text-slate-800">{{ a.nombre }}</td>
-                <td><span class="badge badge-neutral">{{ a.tipo }}</span></td>
-                <td>{{ a.vigente_desde | date: 'dd/MM/yyyy' }}</td>
-                <td class="text-right">
-                  @if (editandoAporte() === a.id) {
-                    <input class="input w-24 text-right" type="number" step="any" [(ngModel)]="nuevoPorcentaje" />
-                  } @else {
-                    <span class="tabular-nums font-semibold">{{ a.porcentaje }}%</span>
-                  }
-                </td>
-                <td class="text-right">
-                  @if (editandoAporte() === a.id) {
-                    <button class="btn-ghost btn-icon rounded-lg text-emerald-600" (click)="guardarAporte(a)"><span class="material-icons text-[20px]">check</span></button>
-                    <button class="btn-ghost btn-icon rounded-lg" (click)="editandoAporte.set(null)"><span class="material-icons text-[20px]">close</span></button>
-                  } @else {
-                    <button class="btn-ghost btn-icon rounded-lg" (click)="editarAporte(a)"><span class="material-icons text-[20px]">edit</span></button>
-                  }
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+        <div class="overflow-x-auto">
+          <table class="table">
+            <thead><tr><th>Concepto</th><th>Tipo</th><th>Vigente desde</th><th class="text-right">Porcentaje</th><th></th></tr></thead>
+            <tbody>
+              @for (a of aportes(); track a.id) {
+                <tr>
+                  <td class="font-medium text-slate-800">{{ a.nombre }}</td>
+                  <td><span class="badge badge-neutral">{{ a.tipo }}</span></td>
+                  <td>{{ a.vigente_desde | date: 'dd/MM/yyyy' }}</td>
+                  <td class="text-right">
+                    @if (editandoAporte() === a.id) {
+                      <input class="input w-24 text-right" type="number" step="any" [(ngModel)]="nuevoPorcentaje" />
+                    } @else {
+                      <span class="tabular-nums font-semibold">{{ a.porcentaje }}%</span>
+                    }
+                  </td>
+                  <td class="text-right">
+                    @if (editandoAporte() === a.id) {
+                      <button class="btn-ghost btn-icon rounded-lg text-emerald-600" (click)="guardarAporte(a)"><span class="material-icons text-[20px]">check</span></button>
+                      <button class="btn-ghost btn-icon rounded-lg" (click)="editandoAporte.set(null)"><span class="material-icons text-[20px]">close</span></button>
+                    } @else {
+                      <button class="btn-ghost btn-icon rounded-lg" (click)="editarAporte(a)"><span class="material-icons text-[20px]">edit</span></button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
       </div>
     }
 
@@ -134,7 +142,7 @@ type Tab = 'liquidaciones' | 'empleados' | 'aportes';
     @if (mostrarProcesar()) {
       <app-modal title="Procesar nómina mensual" (closed)="mostrarProcesar.set(false)">
         <p class="mb-4 text-sm text-slate-500">Se generarán los recibos de todos los empleados activos con estructura salarial vigente.</p>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label class="label">Mes</label>
             <select class="select" [(ngModel)]="mes">
@@ -153,25 +161,27 @@ type Tab = 'liquidaciones' | 'empleados' | 'aportes';
     <!-- Modal recibos -->
     @if (reciboNomina(); as n) {
       <app-modal [title]="'Recibos — ' + n.periodo" [wide]="true" (closed)="reciboNomina.set(null)">
-        <table class="table">
-          <thead><tr><th>Empleado</th><th class="text-right">Haberes</th><th class="text-right">Descuentos</th><th class="text-right">Neto</th><th class="text-right">Costo empresa</th><th></th></tr></thead>
-          <tbody>
-            @for (r of recibos(); track r.recibo_id) {
-              <tr>
-                <td class="font-medium text-slate-800">{{ r.empleado }}</td>
-                <td class="text-right tabular-nums">\${{ r.total_haberes | number: '1.0-2' }}</td>
-                <td class="text-right tabular-nums text-rose-600">-\${{ r.total_descuentos | number: '1.0-2' }}</td>
-                <td class="text-right font-semibold tabular-nums">\${{ r.neto_a_pagar | number: '1.0-2' }}</td>
-                <td class="text-right tabular-nums text-slate-500">\${{ r.costo_total_empleado | number: '1.0-2' }}</td>
-                <td class="text-right">
-                  <button class="btn-ghost btn-icon" title="Recibo PDF" (click)="descargarRecibo(r)">
-                    <span class="material-icons text-[20px]">picture_as_pdf</span>
-                  </button>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+        <div class="overflow-x-auto">
+          <table class="table">
+            <thead><tr><th>Empleado</th><th class="text-right">Haberes</th><th class="text-right">Descuentos</th><th class="text-right">Neto</th><th class="text-right">Costo empresa</th><th></th></tr></thead>
+            <tbody>
+              @for (r of recibos(); track r.recibo_id) {
+                <tr>
+                  <td class="font-medium text-slate-800">{{ r.empleado }}</td>
+                  <td class="text-right tabular-nums">\${{ r.total_haberes | number: '1.0-2' }}</td>
+                  <td class="text-right tabular-nums text-rose-600">-\${{ r.total_descuentos | number: '1.0-2' }}</td>
+                  <td class="text-right font-semibold tabular-nums">\${{ r.neto_a_pagar | number: '1.0-2' }}</td>
+                  <td class="text-right tabular-nums text-slate-500">\${{ r.costo_total_empleado | number: '1.0-2' }}</td>
+                  <td class="text-right">
+                    <button class="btn-ghost btn-icon" title="Recibo PDF" (click)="descargarRecibo(r)">
+                      <span class="material-icons text-[20px]">picture_as_pdf</span>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
         <div modal-footer>
           <button class="btn btn-outline" (click)="exportarNomina(n)">
             <span class="material-icons text-[20px]">download</span> Excel
@@ -184,7 +194,7 @@ type Tab = 'liquidaciones' | 'empleados' | 'aportes';
     <!-- Modal nuevo empleado -->
     @if (mostrarEmpleado()) {
       <app-modal title="Nuevo empleado" [wide]="true" (closed)="mostrarEmpleado.set(false)">
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div><label class="label">DNI</label><input class="input" [(ngModel)]="empForm.dni" /></div>
           <div><label class="label">CUIT</label><input class="input" [(ngModel)]="empForm.cuit" /></div>
           <div><label class="label">Nombre</label><input class="input" [(ngModel)]="empForm.nombre" /></div>
@@ -204,7 +214,7 @@ type Tab = 'liquidaciones' | 'empleados' | 'aportes';
     <!-- Modal estructura salarial -->
     @if (estructuraEmpleado(); as emp) {
       <app-modal [title]="'Estructura salarial — ' + emp.nombre + ' ' + emp.apellido" (closed)="estructuraEmpleado.set(null)">
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div><label class="label">Sueldo básico</label><input class="input" type="number" [(ngModel)]="estForm.sueldo_basico" /></div>
           <div><label class="label">Tarifa horaria</label><input class="input" type="number" [(ngModel)]="estForm.tarifa_horaria" /></div>
           <div><label class="label">Bono fijo</label><input class="input" type="number" [(ngModel)]="estForm.bono_fijo" /></div>

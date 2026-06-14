@@ -25,7 +25,7 @@ import { Modal } from '../../shared/ui/modal';
         </div>
 
         @if (tipo() === 'ingreso') {
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label class="label">Precio unitario</label>
               <input class="input" type="number" formControlName="precio_unitario" min="0" step="any" />

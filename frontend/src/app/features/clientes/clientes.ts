@@ -50,21 +50,23 @@ import { Paginator } from '../../shared/ui/paginator';
     </div>
 
     <div class="card overflow-hidden">
-      <table class="table">
-        <thead><tr><th>Cliente</th><th>Lista</th><th>Zona</th><th>Localidad</th><th>Vendedor</th><th>Teléfono</th></tr></thead>
-        <tbody>
-          @for (c of clientes(); track c.id) {
-            <tr>
-              <td class="font-medium text-slate-800">{{ c.nombre }}</td>
-              <td><span class="badge" [class]="listaClase(c.tipo_lista)">{{ listaLabel(c.tipo_lista) }}</span></td>
-              <td>{{ c.zona || '—' }}</td>
-              <td>{{ c.localidad || '—' }}</td>
-              <td>{{ c.vendedor || '—' }}</td>
-              <td>{{ c.telefono || '—' }}</td>
-            </tr>
-          }
-        </tbody>
-      </table>
+      <div class="overflow-x-auto">
+        <table class="table">
+          <thead><tr><th>Cliente</th><th>Lista</th><th>Zona</th><th>Localidad</th><th>Vendedor</th><th>Teléfono</th></tr></thead>
+          <tbody>
+            @for (c of clientes(); track c.id) {
+              <tr>
+                <td class="font-medium text-slate-800">{{ c.nombre }}</td>
+                <td><span class="badge" [class]="listaClase(c.tipo_lista)">{{ listaLabel(c.tipo_lista) }}</span></td>
+                <td>{{ c.zona || '—' }}</td>
+                <td>{{ c.localidad || '—' }}</td>
+                <td>{{ c.vendedor || '—' }}</td>
+                <td>{{ c.telefono || '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
       @if (clientes().length === 0) {
         <div class="p-12 text-center text-slate-400"><span class="material-icons mb-2 text-4xl">storefront</span><p>Sin clientes.</p></div>
       }
@@ -73,8 +75,8 @@ import { Paginator } from '../../shared/ui/paginator';
 
     @if (mostrarNuevo()) {
       <app-modal title="Nuevo cliente" [wide]="true" (closed)="mostrarNuevo.set(false)">
-        <div class="grid grid-cols-2 gap-4">
-          <div class="col-span-2"><label class="label">Nombre</label><input class="input" [(ngModel)]="form.nombre" /></div>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div class="sm:col-span-2"><label class="label">Nombre</label><input class="input" [(ngModel)]="form.nombre" /></div>
           <div>
             <label class="label">Lista de precios</label>
             <select class="select" [(ngModel)]="form.tipo_lista">

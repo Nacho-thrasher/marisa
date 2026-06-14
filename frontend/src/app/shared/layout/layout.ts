@@ -18,12 +18,18 @@ interface NavItem {
   imports: [RouterLink, RouterLinkActive, RouterOutlet],
   template: `
     <div class="flex h-screen overflow-hidden">
+      <!-- Backdrop (mobile) -->
+      @if (opened()) {
+        <div class="fixed inset-0 z-40 bg-slate-900/40 lg:hidden" (click)="toggle()"></div>
+      }
+
       <!-- Sidebar -->
       <aside
-        class="flex flex-col border-r border-[var(--color-line)] bg-white transition-all duration-200"
-        [class.w-64]="opened()"
-        [class.w-0]="!opened()"
-        [class.overflow-hidden]="!opened()"
+        class="fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-[var(--color-line)] bg-white shadow-xl transition-transform duration-200 lg:static lg:z-auto lg:translate-x-0 lg:shadow-none lg:transition-[width]"
+        [class.translate-x-0]="opened()"
+        [class.-translate-x-full]="!opened()"
+        [class.lg:w-0]="!opened()"
+        [class.lg:overflow-hidden]="!opened()"
       >
         <div class="flex items-center gap-3 px-5 py-5">
           <div class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand-600 text-white shadow-sm">
@@ -46,6 +52,7 @@ interface NavItem {
                   <a
                     [routerLink]="item.route"
                     routerLinkActive="!bg-brand-50 !text-brand-700"
+                    (click)="onNavClick()"
                     class="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
                   >
                     <span class="material-icons text-[20px]">{{ item.icon }}</span>
@@ -151,7 +158,7 @@ export class Layout implements OnInit {
   readonly notif = inject(NotificacionesService);
 
   readonly user = this.auth.user;
-  readonly opened = signal(true);
+  readonly opened = signal(typeof window === 'undefined' || window.innerWidth >= 1024);
   readonly notifAbierto = signal(false);
 
   private readonly allItems: NavItem[] = [
@@ -197,6 +204,12 @@ export class Layout implements OnInit {
 
   toggle() {
     this.opened.update((v) => !v);
+  }
+
+  onNavClick() {
+    if (window.innerWidth < 1024) {
+      this.opened.set(false);
+    }
   }
 
   toggleNotif() {

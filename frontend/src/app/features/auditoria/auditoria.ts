@@ -31,21 +31,23 @@ import { Paginator } from '../../shared/ui/paginator';
     </div>
 
     <div class="card overflow-hidden">
-      <table class="table">
-        <thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Módulo</th><th>Tabla</th><th class="text-right"></th></tr></thead>
-        <tbody>
-          @for (l of logs(); track l.id) {
-            <tr class="cursor-pointer" (click)="ver(l)">
-              <td class="whitespace-nowrap text-slate-600">{{ l.fecha | date: 'dd/MM/yy HH:mm' }}</td>
-              <td class="font-medium text-slate-800">{{ l.usuario || '—' }}</td>
-              <td><span class="badge" [class]="accionClase(l.accion)">{{ l.accion }}</span></td>
-              <td>{{ l.modulo }}</td>
-              <td class="font-mono text-xs text-slate-500">{{ l.tabla || '—' }}</td>
-              <td class="text-right"><span class="material-icons text-[18px] text-slate-400">chevron_right</span></td>
-            </tr>
-          }
-        </tbody>
-      </table>
+      <div class="overflow-x-auto">
+        <table class="table">
+          <thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Módulo</th><th>Tabla</th><th class="text-right"></th></tr></thead>
+          <tbody>
+            @for (l of logs(); track l.id) {
+              <tr class="cursor-pointer" (click)="ver(l)">
+                <td class="whitespace-nowrap text-slate-600">{{ l.fecha | date: 'dd/MM/yy HH:mm' }}</td>
+                <td class="font-medium text-slate-800">{{ l.usuario || '—' }}</td>
+                <td><span class="badge" [class]="accionClase(l.accion)">{{ l.accion }}</span></td>
+                <td>{{ l.modulo }}</td>
+                <td class="font-mono text-xs text-slate-500">{{ l.tabla || '—' }}</td>
+                <td class="text-right"><span class="material-icons text-[18px] text-slate-400">chevron_right</span></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
       @if (logs().length === 0) {
         <div class="p-12 text-center text-slate-400"><span class="material-icons mb-2 text-4xl">fact_check</span><p>Sin registros de auditoría.</p></div>
       }
@@ -54,7 +56,7 @@ import { Paginator } from '../../shared/ui/paginator';
 
     @if (detalle(); as d) {
       <app-modal [title]="'Registro #' + d.id" [wide]="true" (closed)="detalle.set(null)">
-        <dl class="grid grid-cols-2 gap-3 text-sm">
+        <dl class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
           <div><dt class="text-slate-500">Usuario</dt><dd class="font-medium">{{ d.usuario || '—' }}</dd></div>
           <div><dt class="text-slate-500">Fecha</dt><dd class="font-medium">{{ d.fecha | date: 'dd/MM/yyyy HH:mm:ss' }}</dd></div>
           <div><dt class="text-slate-500">Acción</dt><dd><span class="badge" [class]="accionClase(d.accion)">{{ d.accion }}</span></dd></div>
@@ -63,7 +65,7 @@ import { Paginator } from '../../shared/ui/paginator';
           <div><dt class="text-slate-500">Registro ID</dt><dd class="font-mono text-xs">{{ d.registro_id ?? '—' }}</dd></div>
         </dl>
         @if (d.valores_anteriores || d.valores_nuevos) {
-          <div class="mt-4 grid grid-cols-2 gap-3">
+          <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <p class="mb-1 text-xs font-semibold text-slate-500">Valores anteriores</p>
               <pre class="overflow-x-auto rounded-lg bg-slate-50 p-3 text-xs">{{ d.valores_anteriores | json }}</pre>

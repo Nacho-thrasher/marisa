@@ -76,7 +76,7 @@ interface Linea {
 
     @if (mostrarNueva()) {
       <app-modal title="Nueva venta" [wide]="true" (closed)="mostrarNueva.set(false)">
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label class="label">Cliente</label>
             <select class="select" [(ngModel)]="clienteId" (ngModelChange)="onClienteChange()">
@@ -121,16 +121,18 @@ interface Linea {
         </div>
         <div class="space-y-2">
           @for (l of lineas(); track $index) {
-            <div class="flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2">
-              <select class="select flex-1" [(ngModel)]="l.producto_id" (ngModelChange)="autoPrecio(l)">
+            <div class="flex flex-col gap-2 rounded-xl bg-slate-50 px-3 py-2 sm:flex-row sm:items-center">
+              <select class="select w-full sm:flex-1" [(ngModel)]="l.producto_id" (ngModelChange)="autoPrecio(l)">
                 <option [ngValue]="null" disabled>Producto…</option>
                 @for (p of productos(); track p.id) { <option [ngValue]="p.id">{{ p.nombre }}</option> }
               </select>
-              <input class="input w-24" type="number" min="1" [(ngModel)]="l.cantidad" placeholder="Cant." />
-              <input class="input w-28" type="number" min="0" step="any" [(ngModel)]="l.precio_unitario" placeholder="Precio" />
-              <button class="btn-ghost btn-icon rounded-lg text-rose-500" (click)="quitarLinea($index)">
-                <span class="material-icons text-[18px]">delete</span>
-              </button>
+              <div class="flex items-center gap-2">
+                <input class="input w-24" type="number" min="1" [(ngModel)]="l.cantidad" placeholder="Cant." />
+                <input class="input w-28" type="number" min="0" step="any" [(ngModel)]="l.precio_unitario" placeholder="Precio" />
+                <button class="btn-ghost btn-icon rounded-lg text-rose-500" (click)="quitarLinea($index)">
+                  <span class="material-icons text-[18px]">delete</span>
+                </button>
+              </div>
             </div>
           }
         </div>

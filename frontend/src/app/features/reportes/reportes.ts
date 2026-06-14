@@ -13,7 +13,7 @@ import { DescargasService } from '../../core/services/descargas.service';
         <h2 class="page-title">Reporte mensual de ventas</h2>
         <p class="text-sm text-slate-500">Cuánto vende cada vendedor y el detalle por producto.</p>
       </div>
-      <div class="flex gap-2">
+      <div class="flex flex-wrap gap-2">
         <select class="select w-40" [(ngModel)]="mes" (ngModelChange)="cargar()">
           @for (m of meses; track m.v) { <option [ngValue]="m.v">{{ m.n }}</option> }
         </select>
@@ -34,19 +34,21 @@ import { DescargasService } from '../../core/services/descargas.service';
       <!-- Ranking por vendedor -->
       <div class="card mb-6 overflow-hidden">
         <div class="border-b border-slate-100 px-5 py-3 font-semibold text-slate-900">Ventas por vendedor</div>
-        <table class="table">
-          <thead><tr><th>Vendedor</th><th class="text-right">Ventas</th><th class="text-right">Unidades</th><th class="text-right">Monto</th></tr></thead>
-          <tbody>
-            @for (v of r.por_vendedor; track v.vendedor) {
-              <tr>
-                <td class="font-medium text-slate-800">{{ v.vendedor }}</td>
-                <td class="text-right">{{ v.ventas }}</td>
-                <td class="text-right tabular-nums">{{ v.unidades | number: '1.0-0' }}</td>
-                <td class="text-right font-semibold tabular-nums">\${{ v.monto | number: '1.0-0' }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
+        <div class="overflow-x-auto">
+          <table class="table">
+            <thead><tr><th>Vendedor</th><th class="text-right">Ventas</th><th class="text-right">Unidades</th><th class="text-right">Monto</th></tr></thead>
+            <tbody>
+              @for (v of r.por_vendedor; track v.vendedor) {
+                <tr>
+                  <td class="font-medium text-slate-800">{{ v.vendedor }}</td>
+                  <td class="text-right">{{ v.ventas }}</td>
+                  <td class="text-right tabular-nums">{{ v.unidades | number: '1.0-0' }}</td>
+                  <td class="text-right font-semibold tabular-nums">\${{ v.monto | number: '1.0-0' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
         @if (r.por_vendedor.length === 0) {
           <p class="p-10 text-center text-slate-400">Sin ventas en este período.</p>
         }
