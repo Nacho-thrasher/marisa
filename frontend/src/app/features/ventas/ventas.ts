@@ -6,6 +6,7 @@ import { ProduccionService, Producto } from '../../core/services/produccion.serv
 import { ClientesService, Cliente, Vendedor, TipoLista } from '../../core/services/clientes.service';
 import { DescargasService } from '../../core/services/descargas.service';
 import { ToastService } from '../../shared/ui/toast.service';
+import { ConfirmService } from '../../shared/ui/confirm.service';
 import { Modal } from '../../shared/ui/modal';
 import { Paginator } from '../../shared/ui/paginator';
 
@@ -149,6 +150,7 @@ export class Ventas implements OnInit {
   private clientesService = inject(ClientesService);
   private descargas = inject(DescargasService);
   private toast = inject(ToastService);
+  private confirm = inject(ConfirmService);
 
   readonly ventas = signal<VentaListItem[]>([]);
   readonly total = signal(0);
@@ -297,8 +299,17 @@ export class Ventas implements OnInit {
     this.descargas.descargar(`/ventas/${v.venta_id}/remito`, `${v.numero_comprobante}.pdf`);
   }
 
-  anular(v: VentaListItem) {
-    const motivo = prompt(`Motivo de anulación de ${v.numero_comprobante}:`);
+  async anular(v: VentaListItem) {
+    const motivo = await this.confirm.prompt({
+      title: `Anular ${v.numero_comprobante}`,
+      message: 'Esta acción revierte el stock y deja la venta sin efecto. Ingresá el motivo de la anulación.',
+      label: 'Motivo de anulación',
+      placeholder: 'Ej.: error de carga, devolución del cliente…',
+      tone: 'danger',
+      icon: 'block',
+      confirmText: 'Anular venta',
+      multiline: true,
+    });
     if (!motivo) return;
     this.service.anular(v.venta_id, motivo).subscribe(() => {
       this.toast.success('Venta anulada');

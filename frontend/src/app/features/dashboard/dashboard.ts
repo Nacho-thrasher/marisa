@@ -14,49 +14,64 @@ import { ResumenStock } from '../../core/models/insumo.model';
     <h2 class="page-title">Hola, {{ user()?.username }} 👋</h2>
     <p class="page-subtitle">Panorama general de la operación.</p>
 
+    <!-- Accesos rápidos -->
+    <div class="mb-6 flex flex-wrap gap-2">
+      @if (gerente()) {
+        <a routerLink="/ventas" class="btn btn-soft"><span class="material-icons text-[18px]">point_of_sale</span> Nueva venta</a>
+      }
+      @if (esOperacion()) {
+        <a routerLink="/pedidos" class="btn btn-outline"><span class="material-icons text-[18px]">edit_note</span> Pedido diario</a>
+        <a routerLink="/produccion" class="btn btn-outline"><span class="material-icons text-[18px]">precision_manufacturing</span> Nueva orden</a>
+        <a routerLink="/inventario" class="btn btn-outline"><span class="material-icons text-[18px]">inventory_2</span> Inventario</a>
+      }
+      @if (esComercial()) {
+        <a routerLink="/reportes" class="btn btn-outline"><span class="material-icons text-[18px]">bar_chart</span> Reporte mensual</a>
+      }
+    </div>
+
     <!-- KPIs -->
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       @if (esOperacion()) {
-        <div class="card p-5">
+        <div class="card p-5 transition-shadow hover:shadow-md">
           <div class="flex items-start justify-between">
             <div>
-              <div class="text-sm text-slate-500">Valor de stock</div>
-              <div class="mt-1 text-2xl font-bold">\${{ (stock()?.valor_total_stock ?? 0) | number: '1.0-0' }}</div>
-              <div class="mt-1 text-xs text-slate-400">{{ stock()?.total_insumos ?? 0 }} insumos activos</div>
+              <div class="text-sm font-medium text-slate-500">Valor de stock</div>
+              <div class="mt-1.5 text-2xl font-bold tracking-tight text-slate-900">\${{ (stock()?.valor_total_stock ?? 0) | number: '1.0-0' }}</div>
+              <div class="mt-1.5 text-xs text-slate-400">{{ stock()?.total_insumos ?? 0 }} insumos activos</div>
             </div>
-            <span class="grid h-10 w-10 place-items-center rounded-md bg-brand-100 text-brand-700"><span class="material-icons text-[20px]">inventory_2</span></span>
+            <div class="icon-chip chip-blue"><span class="material-icons">inventory_2</span></div>
           </div>
         </div>
-        <div class="card p-5">
+        <div class="card p-5 transition-shadow hover:shadow-md">
           <div class="flex items-start justify-between">
             <div>
-              <div class="text-sm text-slate-500">Alertas de stock</div>
-              <div class="mt-1 text-2xl font-bold">{{ (stock()?.insumos_alerta ?? 0) + (stock()?.insumos_criticos ?? 0) }}</div>
-              <div class="mt-1 text-xs text-rose-600">{{ stock()?.insumos_criticos ?? 0 }} críticos</div>
+              <div class="text-sm font-medium text-slate-500">Alertas de stock</div>
+              <div class="mt-1.5 text-2xl font-bold tracking-tight text-slate-900">{{ (stock()?.insumos_alerta ?? 0) + (stock()?.insumos_criticos ?? 0) }}</div>
+              <div class="mt-1.5 text-xs font-medium text-rose-600">{{ stock()?.insumos_criticos ?? 0 }} críticos</div>
             </div>
-            <span class="grid h-10 w-10 place-items-center rounded-md bg-amber-100 text-amber-700"><span class="material-icons text-[20px]">warning</span></span>
+            <div class="icon-chip chip-amber"><span class="material-icons">warning</span></div>
           </div>
         </div>
-        <div class="card p-5">
+        <div class="card p-5 transition-shadow hover:shadow-md">
           <div class="flex items-start justify-between">
             <div>
-              <div class="text-sm text-slate-500">Órdenes activas</div>
-              <div class="mt-1 text-2xl font-bold">{{ ordenesActivas() }}</div>
-              <div class="mt-1 text-xs text-slate-400">producción en curso</div>
+              <div class="text-sm font-medium text-slate-500">Órdenes activas</div>
+              <div class="mt-1.5 text-2xl font-bold tracking-tight text-slate-900">{{ ordenesActivas() }}</div>
+              <div class="mt-1.5 text-xs text-slate-400">producción en curso</div>
             </div>
-            <span class="grid h-10 w-10 place-items-center rounded-md bg-indigo-100 text-indigo-700"><span class="material-icons text-[20px]">precision_manufacturing</span></span>
+            <div class="icon-chip chip-green"><span class="material-icons">precision_manufacturing</span></div>
           </div>
         </div>
       }
       @if (esComercial()) {
-        <div class="card p-5">
+        <div class="card p-5 transition-shadow hover:shadow-md">
           <div class="flex items-start justify-between">
             <div>
-              <div class="text-sm text-slate-500">Ventas (vigentes)</div>
-              <div class="mt-1 text-2xl font-bold">\${{ (ventas()?.total_vendido ?? 0) | number: '1.0-0' }}</div>
-              <div class="mt-1 text-xs text-emerald-600">ganancia \${{ (ventas()?.ganancia_total ?? 0) | number: '1.0-0' }}</div>
+              <div class="text-sm font-medium text-slate-500">Ventas (vigentes)</div>
+              <div class="mt-1.5 text-2xl font-bold tracking-tight text-slate-900">\${{ (ventas()?.total_vendido ?? 0) | number: '1.0-0' }}</div>
+              <div class="mt-1.5 text-xs font-medium text-emerald-600">ganancia \${{ (ventas()?.ganancia_total ?? 0) | number: '1.0-0' }}</div>
             </div>
-            <span class="grid h-10 w-10 place-items-center rounded-md bg-emerald-100 text-emerald-700"><span class="material-icons text-[20px]">payments</span></span>
+            <div class="icon-chip chip-violet"><span class="material-icons">payments</span></div>
           </div>
         </div>
       }
@@ -65,19 +80,22 @@ import { ResumenStock } from '../../core/models/insumo.model';
     <!-- Alertas de stock -->
     @if (esOperacion() && alertas().length) {
       <div class="card mt-6 p-5">
-        <div class="mb-3 flex items-center justify-between">
+        <div class="mb-4 flex items-center justify-between">
           <h3 class="font-semibold text-slate-900">Alertas de stock</h3>
-          <a routerLink="/inventario" class="text-sm font-medium text-brand-600 hover:text-brand-700">Ver inventario →</a>
+          <a routerLink="/inventario" class="inline-flex items-center gap-1 text-sm font-medium text-brand-600 hover:text-brand-700">Ver inventario <span class="material-icons text-[16px]">arrow_forward</span></a>
         </div>
-        <div class="space-y-2">
+        <div class="space-y-2.5">
           @for (a of alertas(); track a.insumo_id) {
             <div
-              class="flex items-center justify-between rounded-md border-l-4 px-4 py-2.5"
-              [class]="a.estado === 'CRITICO' ? 'border-rose-500 bg-rose-50' : 'border-amber-500 bg-amber-50'"
+              class="flex items-center justify-between rounded-xl border-l-[3px] px-4 py-3"
+              [class]="a.estado === 'CRITICO' ? 'border-rose-500 bg-rose-50/60' : 'border-amber-500 bg-amber-50/60'"
             >
-              <div>
-                <div class="font-medium text-slate-800">{{ a.nombre }}</div>
-                <div class="text-xs text-slate-500">Stock: {{ a.cantidad | number: '1.0-2' }}</div>
+              <div class="flex items-center gap-3">
+                <span class="h-2 w-2 rounded-full" [class]="a.estado === 'CRITICO' ? 'bg-rose-500' : 'bg-amber-500'"></span>
+                <div>
+                  <div class="font-medium text-slate-800">{{ a.nombre }}</div>
+                  <div class="text-xs text-slate-500">Stock: {{ a.cantidad | number: '1.0-2' }}</div>
+                </div>
               </div>
               <span class="badge" [class]="a.estado === 'CRITICO' ? 'badge-critico' : 'badge-bajo'">
                 {{ a.estado === 'CRITICO' ? 'Crítico' : 'Bajo' }}
@@ -162,6 +180,9 @@ export class Dashboard implements OnInit {
   }
   esComercial() {
     return this.auth.hasRole('GERENTE', 'CONTADOR');
+  }
+  gerente() {
+    return this.auth.hasRole('GERENTE');
   }
 
   ordenesActivas() {

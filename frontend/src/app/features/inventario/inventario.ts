@@ -27,9 +27,9 @@ import { Paginator } from '../../shared/ui/paginator';
 
     <!-- Filtros -->
     <div class="card mb-4 flex flex-wrap items-center gap-3 p-3">
-      <div class="relative min-w-64 flex-1">
-        <span class="material-icons absolute top-1/2 left-3 -translate-y-1/2 text-[20px] text-slate-400">search</span>
-        <input class="input pl-10" [formControl]="searchCtrl" placeholder="Buscar por nombre o código…" />
+      <div class="search min-w-64 flex-1">
+        <span class="material-icons">search</span>
+        <input class="input" [formControl]="searchCtrl" placeholder="Buscar por nombre o código…" />
       </div>
       <select class="select w-48" [formControl]="categoriaCtrl">
         <option value="">Todas las categorías</option>

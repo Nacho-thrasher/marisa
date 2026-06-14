@@ -4,7 +4,7 @@
 @theme {
   --font-sans: 'Inter', system-ui, sans-serif;
 
-  /* Marca: violeta → índigo */
+  /* Marca: violeta → índigo (acento principal) */
   --color-brand-50: #eef2ff;
   --color-brand-100: #e0e7ff;
   --color-brand-200: #c7d2fe;
@@ -18,146 +18,284 @@
 
   --color-accent: #f59e0b;
 
-  /* Radios sobrios (estilo shadcn/empresarial): escala global más chica.
-     Achica TODO el rounded-* del proyecto sin tocar plantillas. */
-  --radius-sm: 0.125rem; /* 2px  */
-  --radius-md: 0.25rem; /* 4px  */
-  --radius-lg: 0.375rem; /* 6px  */
-  --radius-xl: 0.5rem; /* 8px  */
-  --radius-2xl: 0.625rem; /* 10px */
-  --radius-3xl: 0.75rem; /* 12px */
+  /* Superficies / texto (estilo claro y aireado, tipo dashboard moderno) */
+  --color-canvas: #f6f7f9;
+  /* fondo de la app */
+  --color-surface: #ffffff;
+  /* tarjetas */
+  --color-line: #eceef1;
+  /* bordes sutiles */
+
+  /* Radios suaves pero profesionales */
+  --radius-sm: 0.25rem;
+  /* 4px  */
+  --radius-md: 0.375rem;
+  /* 6px  */
+  --radius-lg: 0.5rem;
+  /* 8px  */
+  --radius-xl: 0.625rem;
+  /* 10px */
+  --radius-2xl: 0.875rem;
+  /* 14px */
+  --radius-3xl: 1rem;
+  /* 16px */
+
+  /* Sombras suaves (capas finas, sin dureza) */
+  --shadow-xs: 0 1px 2px 0 rgb(16 24 40 / 0.04);
+  --shadow-sm: 0 1px 3px 0 rgb(16 24 40 / 0.06), 0 1px 2px -1px rgb(16 24 40 / 0.04);
+  --shadow-md: 0 4px 12px -2px rgb(16 24 40 / 0.08), 0 2px 6px -2px rgb(16 24 40 / 0.05);
+  --shadow-lg: 0 12px 28px -6px rgb(16 24 40 / 0.12), 0 4px 10px -4px rgb(16 24 40 / 0.06);
 }
 
 /* ───────────────────────── Base ───────────────────────── */
 @layer base {
+
   html,
   body {
     height: 100%;
   }
+
   body {
-    @apply bg-slate-100 text-slate-800 antialiased;
+    @apply text-slate-700 antialiased;
+    background-color: var(--color-canvas);
     margin: 0;
     font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
+
   h1,
   h2,
   h3 {
     @apply font-semibold tracking-tight text-slate-900;
   }
+
   ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
   }
-  ::-webkit-scrollbar-thumb {
-    @apply rounded-md bg-slate-300;
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
   }
+
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-slate-300/70;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-slate-400;
+  }
+
+  * {
+    scrollbar-width: thin;
   }
 }
 
 /* ───────────────────────── Componentes ───────────────────────── */
 @layer components {
   .card {
-    @apply rounded-lg border border-slate-200 bg-white shadow-sm;
+    @apply rounded-2xl border border-[var(--color-line)] bg-white shadow-sm;
   }
 
   .page-title {
-    @apply mb-1 text-xl font-semibold text-slate-900;
+    @apply mb-1 text-2xl font-bold tracking-tight text-slate-900;
   }
+
   .page-subtitle {
     @apply mb-6 text-sm text-slate-500;
   }
 
-  /* Botones — compactos, peso medio, radio sobrio */
+  /* Botones — compactos, peso medio, foco accesible */
   .btn {
-    @apply inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-md px-4 text-sm font-medium
-           transition-colors duration-150 select-none disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-lg px-3.5 text-sm font-semibold transition-all duration-150 select-none focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50;
   }
+
   .btn-primary {
-    @apply bg-brand-600 text-white hover:bg-brand-700;
+    @apply bg-brand-600 text-white shadow-xs hover:bg-brand-700 active:bg-brand-800;
   }
+
   .btn-soft {
     @apply bg-brand-50 text-brand-700 hover:bg-brand-100;
   }
+
   .btn-ghost {
-    @apply text-slate-600 hover:bg-slate-100;
-  }
-  .btn-outline {
-    @apply border border-slate-300 bg-white text-slate-700 hover:bg-slate-50;
-  }
-  .btn-danger {
-    @apply bg-rose-600 text-white hover:bg-rose-700;
-  }
-  .btn-icon {
-    @apply grid h-9 w-9 place-items-center rounded-md p-0;
+    @apply text-slate-600 hover:bg-slate-100 hover:text-slate-900;
   }
 
-  /* Inputs — estilo shadcn: borde nítido, foco sutil, sin sombra fuerte */
+  .btn-outline {
+    @apply border border-slate-200 bg-white text-slate-700 shadow-xs hover:bg-slate-50 hover:text-slate-900;
+  }
+
+  .btn-danger {
+    @apply bg-rose-600 text-white shadow-xs hover:bg-rose-700 active:bg-rose-800;
+  }
+
+  .btn-icon {
+    @apply grid h-9 w-9 place-items-center rounded-lg p-0;
+  }
+
+  /* Inputs — borde nítido, foco anillo de marca */
   .label {
     @apply mb-1.5 block text-sm font-medium text-slate-700;
   }
+
   .input,
   .select,
   .textarea {
-    @apply w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900
-           shadow-xs transition-colors outline-none placeholder:text-slate-400
-           focus:border-brand-500 focus:ring-1 focus:ring-brand-500/40
-           disabled:cursor-not-allowed disabled:opacity-50;
+    @apply w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-xs transition-colors outline-none placeholder:text-slate-400 hover:border-slate-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:opacity-70;
   }
+
+  .select {
+    @apply cursor-pointer appearance-none bg-no-repeat pr-9;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-position: right 0.625rem center;
+    background-size: 1rem;
+  }
+
   .input,
   .select {
     @apply h-9;
   }
+
   .textarea {
     @apply min-h-16 py-2;
   }
+
   .input-error {
     @apply border-rose-400 focus:border-rose-500 focus:ring-rose-500/30;
   }
 
-  /* Badges — tags rectangulares (no píldora) */
+  /* Buscador con icono incorporado */
+  .search {
+    @apply relative;
+  }
+
+  .search>.material-icons {
+    @apply pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[20px] text-slate-400;
+  }
+
+  .search>.input {
+    @apply pl-10;
+  }
+
+  /* Badges — píldoras suaves con punto opcional */
   .badge {
-    @apply inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium;
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold;
   }
+
   .badge-ok {
-    @apply bg-emerald-100 text-emerald-700;
+    @apply bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/15;
   }
+
   .badge-bajo {
-    @apply bg-amber-100 text-amber-700;
+    @apply bg-amber-50 text-amber-700 ring-1 ring-amber-600/15;
   }
+
   .badge-critico {
-    @apply bg-rose-100 text-rose-700;
+    @apply bg-rose-50 text-rose-700 ring-1 ring-rose-600/15;
   }
+
   .badge-neutral {
+    @apply bg-slate-100 text-slate-600 ring-1 ring-slate-500/10;
+  }
+
+  .badge-info {
+    @apply bg-brand-50 text-brand-700 ring-1 ring-brand-600/15;
+  }
+
+  /* Icon-chip: cuadro de icono coloreado para KPIs y listas */
+  .icon-chip {
+    @apply grid h-10 w-10 shrink-0 place-items-center rounded-xl;
+  }
+
+  .icon-chip .material-icons {
+    @apply text-[20px];
+  }
+
+  .chip-brand {
+    @apply bg-brand-50 text-brand-600;
+  }
+
+  .chip-blue {
+    @apply bg-sky-50 text-sky-600;
+  }
+
+  .chip-green {
+    @apply bg-emerald-50 text-emerald-600;
+  }
+
+  .chip-amber {
+    @apply bg-amber-50 text-amber-600;
+  }
+
+  .chip-rose {
+    @apply bg-rose-50 text-rose-600;
+  }
+
+  .chip-violet {
+    @apply bg-violet-50 text-violet-600;
+  }
+
+  .chip-slate {
     @apply bg-slate-100 text-slate-600;
   }
-  .badge-info {
-    @apply bg-brand-100 text-brand-700;
+
+  /* Segmented control / tabs */
+  .tabs {
+    @apply inline-flex gap-1 rounded-xl bg-slate-100 p-1;
+  }
+
+  .tab {
+    @apply cursor-pointer rounded-lg px-4 py-1.5 text-sm font-semibold text-slate-500 transition-colors hover:text-slate-700;
+  }
+
+  .tab-active {
+    @apply bg-white text-brand-700 shadow-xs;
   }
 
   /* Tablas */
   .table {
     @apply w-full border-collapse text-sm;
   }
+
   .table thead th {
-    @apply border-b border-slate-200 bg-slate-50 px-4 py-3 text-left text-xs font-semibold
-           tracking-wide text-slate-500 uppercase;
+    @apply border-b border-[var(--color-line)] bg-slate-50/60 px-4 py-3 text-left text-[11px] font-semibold tracking-wider text-slate-500 uppercase;
   }
+
   .table tbody td {
-    @apply border-b border-slate-100 px-4 py-3 text-slate-700;
+    @apply border-b border-[var(--color-line)] px-4 py-3 text-slate-700;
   }
+
   .table tbody tr:last-child td {
     @apply border-b-0;
   }
+
   .table tbody tr {
-    @apply transition-colors hover:bg-slate-50;
+    @apply transition-colors hover:bg-slate-50/70;
   }
 }
 
-/* Iconos de Material como fuente (sin componentes de Material) */
-.material-icons {
+/* ───────────────────────── Iconos (Material Symbols, trazo fino) ───────────────────────── */
+.material-icons,
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
   font-feature-settings: 'liga';
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
   user-select: none;
   vertical-align: middle;
+  /* Trazo fino y tamaño óptico, parecido a Lucide */
+  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
 }

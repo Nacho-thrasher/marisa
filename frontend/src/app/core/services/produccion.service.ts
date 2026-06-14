@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse, PaginatedResponse } from '../models/api.model';
+import { skipErrorToast } from '../interceptors/error.interceptor';
 
 export interface Producto {
   id: number;
@@ -65,10 +66,11 @@ export class ProduccionService {
     return this.http.get<PaginatedResponse<Producto>>(`${this.api}/productos`, { params });
   }
 
-  preview(producto_id: number, cantidad_solicitada: number) {
+  preview(producto_id: number, cantidad_solicitada: number, silent = false) {
     return this.http.post<ApiResponse<{ insumos_requeridos: InsumoRequerido[]; costo_estimado: string }>>(
       `${this.api}/produccion/preview`,
       { producto_id, cantidad_solicitada },
+      { context: silent ? skipErrorToast() : undefined },
     );
   }
 

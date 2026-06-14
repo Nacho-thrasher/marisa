@@ -21,16 +21,17 @@ import { AuthService } from '../../core/services/auth.service';
 
         <div>
           <h1 class="max-w-md text-4xl leading-tight font-extrabold text-white">
-            Gestión de producción y nómina, todo en un lugar.
+            Gestión de producción y nómina.
           </h1>
           <p class="mt-4 max-w-md text-brand-100">
-            Inventario, recetas, ventas, sueldos y auditoría para tu fábrica de snacks.
+            Inventario, recetas, ventas, sueldos y auditoría.
           </p>
         </div>
 
         <div class="flex gap-8 text-sm text-brand-100">
-          <div><div class="text-2xl font-bold text-white">+27</div>módulos de datos</div>
-          <div><div class="text-2xl font-bold text-white">100%</div>trazabilidad</div>
+          <!-- <div><div class="text-2xl font-bold text-white">+27</div>módulos de datos</div> -->
+          <!-- <div><div class="text-2xl font-bold text-white">100%</div>trazabilidad</div> -->
+          <div><div class="text-2xl font-bold text-white"></div>Developed by IgnaBurgos</div>
         </div>
 
         <div class="pointer-events-none absolute -right-24 -bottom-24 h-80 w-80 rounded-full bg-white/10"></div>

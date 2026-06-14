@@ -11,7 +11,14 @@ export function createApp() {
   const app = express();
 
   app.use(helmet());
-  app.use(cors({ origin: env.corsOrigin, credentials: true }));
+  app.use(
+    cors({
+      origin: env.corsOrigin,
+      credentials: true,
+      // Permite que el frontend lea el nombre de archivo de las descargas (Excel/PDF).
+      exposedHeaders: ['Content-Disposition'],
+    }),
+  );
   app.use(express.json({ limit: '2mb' }));
   app.use(express.urlencoded({ extended: true }));
   if (!env.isProd) app.use(morgan('dev'));

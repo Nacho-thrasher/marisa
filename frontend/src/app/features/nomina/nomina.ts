@@ -22,13 +22,9 @@ type Tab = 'liquidaciones' | 'empleados' | 'aportes';
     <p class="page-subtitle">Empleados, liquidaciones de sueldo y aportes.</p>
 
     <!-- Tabs -->
-    <div class="mb-5 flex gap-1 rounded-xl bg-slate-200/60 p-1">
+    <div class="tabs mb-5">
       @for (t of tabs; track t.id) {
-        <button
-          class="flex-1 rounded-lg px-4 py-2 text-sm font-semibold transition"
-          [class]="tab() === t.id ? 'bg-white text-brand-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
-          (click)="tab.set(t.id)"
-        >
+        <button class="tab" [class.tab-active]="tab() === t.id" (click)="tab.set(t.id)">
           {{ t.label }}
         </button>
       }

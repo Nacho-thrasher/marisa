@@ -38,9 +38,9 @@ import { Paginator } from '../../shared/ui/paginator';
     }
 
     <div class="card mb-4 flex flex-wrap items-center gap-3 p-3">
-      <div class="relative min-w-64 flex-1">
-        <span class="material-icons absolute top-1/2 left-3 -translate-y-1/2 text-[20px] text-slate-400">search</span>
-        <input class="input pl-10" [(ngModel)]="search" (ngModelChange)="cargar(1)" placeholder="Buscar cliente o localidad…" />
+      <div class="search min-w-64 flex-1">
+        <span class="material-icons">search</span>
+        <input class="input" [(ngModel)]="search" (ngModelChange)="cargar(1)" placeholder="Buscar cliente o localidad…" />
       </div>
       @if (zonaFiltro()) {
         <button class="btn btn-outline" (click)="filtrarZona(zonaFiltro())">
