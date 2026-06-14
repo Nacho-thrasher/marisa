@@ -1,11 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatListModule } from '@angular/material/list';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
-import { MatMenuModule } from '@angular/material/menu';
 import { AuthService } from '../../core/services/auth.service';
 
 interface NavItem {
@@ -17,19 +11,72 @@ interface NavItem {
 
 @Component({
   selector: 'app-layout',
-  imports: [
-    RouterLink,
-    RouterLinkActive,
-    RouterOutlet,
-    MatToolbarModule,
-    MatSidenavModule,
-    MatListModule,
-    MatIconModule,
-    MatButtonModule,
-    MatMenuModule,
-  ],
-  templateUrl: './layout.html',
-  styleUrl: './layout.scss',
+  imports: [RouterLink, RouterLinkActive, RouterOutlet],
+  template: `
+    <div class="flex h-screen overflow-hidden bg-slate-100">
+      <!-- Sidebar -->
+      <aside
+        class="flex flex-col bg-gradient-to-b from-brand-700 to-brand-900 text-brand-100 transition-all duration-200"
+        [class.w-64]="opened()"
+        [class.w-0]="!opened()"
+        [class.overflow-hidden]="!opened()"
+      >
+        <div class="flex items-center gap-3 px-5 py-5">
+          <div class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/15 backdrop-blur">
+            <span class="material-icons text-white">factory</span>
+          </div>
+          <div class="leading-tight">
+            <div class="font-bold text-white">Marisa</div>
+            <div class="text-xs text-brand-200">Producción & Nómina</div>
+          </div>
+        </div>
+
+        <nav class="mt-2 flex-1 space-y-1 px-3">
+          @for (item of items(); track item.route) {
+            <a
+              [routerLink]="item.route"
+              routerLinkActive="bg-white/15 text-white shadow-sm"
+              class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-brand-100 transition hover:bg-white/10 hover:text-white"
+            >
+              <span class="material-icons text-[20px]">{{ item.icon }}</span>
+              {{ item.label }}
+            </a>
+          }
+        </nav>
+
+        <div class="border-t border-white/10 p-3">
+          <div class="flex items-center gap-3 rounded-xl px-3 py-2">
+            <div class="grid h-9 w-9 place-items-center rounded-full bg-white/20 text-sm font-bold text-white">
+              {{ inicial() }}
+            </div>
+            <div class="min-w-0 flex-1 leading-tight">
+              <div class="truncate text-sm font-semibold text-white">{{ user()?.username }}</div>
+              <div class="text-xs text-brand-200">{{ user()?.rol }}</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main -->
+      <div class="flex min-w-0 flex-1 flex-col">
+        <header class="flex items-center gap-3 border-b border-slate-200 bg-white/80 px-5 py-3 backdrop-blur">
+          <button class="btn-ghost btn-icon rounded-lg" (click)="toggle()">
+            <span class="material-icons">menu</span>
+          </button>
+          <h1 class="text-base font-semibold text-slate-700">{{ pageLabel() }}</h1>
+          <div class="flex-1"></div>
+          <button class="btn btn-ghost" (click)="logout()">
+            <span class="material-icons text-[20px]">logout</span>
+            Salir
+          </button>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-6">
+          <router-outlet />
+        </main>
+      </div>
+    </div>
+  `,
 })
 export class Layout {
   private auth = inject(AuthService);
@@ -49,6 +96,9 @@ export class Layout {
   readonly items = computed(() =>
     this.allItems.filter((i) => !i.roles || this.auth.hasRole(...i.roles)),
   );
+
+  readonly inicial = computed(() => (this.user()?.username ?? '?').charAt(0).toUpperCase());
+  readonly pageLabel = computed(() => this.user()?.rol ?? '');
 
   toggle() {
     this.opened.update((v) => !v);

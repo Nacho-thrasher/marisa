@@ -1,81 +1,63 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatSelectModule } from '@angular/material/select';
 import { InsumoService } from '../../core/services/insumo.service';
+import { ToastService } from '../../shared/ui/toast.service';
+import { Modal } from '../../shared/ui/modal';
 
 @Component({
   selector: 'app-insumo-form-dialog',
-  imports: [
-    ReactiveFormsModule,
-    MatDialogModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatSelectModule,
-  ],
+  imports: [ReactiveFormsModule, Modal],
   template: `
-    <h2 mat-dialog-title>Nuevo insumo</h2>
-    <mat-dialog-content>
-      <form [formGroup]="form" class="grid">
-        <mat-form-field appearance="outline">
-          <mat-label>Código</mat-label>
-          <input matInput formControlName="codigo" />
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Nombre</mat-label>
-          <input matInput formControlName="nombre" />
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Categoría</mat-label>
-          <input matInput formControlName="categoria" />
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Unidad de medida</mat-label>
-          <mat-select formControlName="unidad_medida">
-            <mat-option value="kg">kg</mat-option>
-            <mat-option value="litros">litros</mat-option>
-            <mat-option value="unidades">unidades</mat-option>
-          </mat-select>
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Precio unitario</mat-label>
-          <input matInput type="number" formControlName="precio_unitario" min="0" />
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Stock mínimo</mat-label>
-          <input matInput type="number" formControlName="stock_minimo" min="0" />
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Stock crítico</mat-label>
-          <input matInput type="number" formControlName="stock_critico" min="0" />
-        </mat-form-field>
+    <app-modal title="Nuevo insumo" [wide]="true" (closed)="closed.emit()">
+      <form [formGroup]="form" class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="label">Código</label>
+          <input class="input" formControlName="codigo" placeholder="PAPA-002" />
+        </div>
+        <div>
+          <label class="label">Nombre</label>
+          <input class="input" formControlName="nombre" />
+        </div>
+        <div>
+          <label class="label">Categoría</label>
+          <input class="input" formControlName="categoria" />
+        </div>
+        <div>
+          <label class="label">Unidad de medida</label>
+          <select class="select" formControlName="unidad_medida">
+            <option value="kg">kg</option>
+            <option value="litros">litros</option>
+            <option value="unidades">unidades</option>
+          </select>
+        </div>
+        <div>
+          <label class="label">Precio unitario</label>
+          <input class="input" type="number" formControlName="precio_unitario" min="0" step="any" />
+        </div>
+        <div>
+          <label class="label">Stock mínimo</label>
+          <input class="input" type="number" formControlName="stock_minimo" min="0" step="any" />
+        </div>
+        <div>
+          <label class="label">Stock crítico</label>
+          <input class="input" type="number" formControlName="stock_critico" min="0" step="any" />
+        </div>
       </form>
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button (click)="ref.close()">Cancelar</button>
-      <button mat-flat-button color="primary" [disabled]="form.invalid || saving()" (click)="guardar()">
-        Crear
-      </button>
-    </mat-dialog-actions>
-  `,
-  styles: `
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px 16px;
-      min-width: 480px;
-    }
+
+      <div modal-footer>
+        <button class="btn btn-ghost" (click)="closed.emit()">Cancelar</button>
+        <button class="btn btn-primary" [disabled]="form.invalid || saving()" (click)="guardar()">Crear</button>
+      </div>
+    </app-modal>
   `,
 })
 export class InsumoFormDialog {
   private fb = inject(FormBuilder);
   private service = inject(InsumoService);
-  readonly ref = inject(MatDialogRef<InsumoFormDialog>);
+  private toast = inject(ToastService);
 
+  readonly saved = output<void>();
+  readonly closed = output<void>();
   readonly saving = signal(false);
 
   form = this.fb.nonNullable.group({
@@ -92,7 +74,10 @@ export class InsumoFormDialog {
     if (this.form.invalid) return;
     this.saving.set(true);
     this.service.crear(this.form.getRawValue()).subscribe({
-      next: () => this.ref.close(true),
+      next: () => {
+        this.toast.success('Insumo creado');
+        this.saved.emit();
+      },
       error: () => this.saving.set(false),
     });
   }

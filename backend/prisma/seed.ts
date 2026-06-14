@@ -10,6 +10,7 @@ async function seedUsuarios() {
     { username: 'gerente', email: 'gerente@marisa.com', rol: 'GERENTE' as const, pass: 'Gerente123!' },
     { username: 'operario', email: 'operario@marisa.com', rol: 'OPERARIO' as const, pass: 'Operario123!' },
     { username: 'rrhh', email: 'rrhh@marisa.com', rol: 'RRHH' as const, pass: 'Rrhh123!' },
+    { username: 'contador', email: 'contador@marisa.com', rol: 'CONTADOR' as const, pass: 'Contador123!' },
   ];
 
   for (const u of usuarios) {
@@ -110,11 +111,121 @@ async function seedConfiguracionRRHH() {
   console.log(`✓ configuración de aportes y escala de antigüedad`);
 }
 
+async function seedProductosYRecetas() {
+  const productos = [
+    { codigo: 'PAPA-45', nombre: 'Papas Fritas 45gr', categoria: 'papas_fritas', peso: 45, precio: 350 },
+    { codigo: 'PAPA-90', nombre: 'Papas Fritas 90gr', categoria: 'papas_fritas', peso: 90, precio: 600 },
+    { codigo: 'PAPA-500', nombre: 'Papas Fritas 500gr', categoria: 'papas_fritas', peso: 500, precio: 2200 },
+    { codigo: 'MANI-90', nombre: 'Maní 90gr', categoria: 'mani', peso: 90, precio: 500 },
+    { codigo: 'PREPIZZA-C', nombre: 'PrePizza común', categoria: 'panificados', peso: null, precio: 800 },
+  ];
+  for (const p of productos) {
+    await prisma.producto.upsert({
+      where: { codigo: p.codigo },
+      update: {},
+      create: {
+        codigo: p.codigo,
+        nombre: p.nombre,
+        categoria: p.categoria,
+        pesoGramos: p.peso ?? undefined,
+        precioVenta: D(p.precio),
+      },
+    });
+  }
+
+  // Receta de Papas Fritas 90gr (rinde 50 unidades): papa, aceite, sal, envase.
+  const papa90 = await prisma.producto.findUnique({ where: { codigo: 'PAPA-90' } });
+  const yaTiene = papa90 && (await prisma.receta.findFirst({ where: { productoId: papa90.id } }));
+  if (papa90 && !yaTiene) {
+    const ins = async (codigo: string) => prisma.insumo.findUnique({ where: { codigo } });
+    const papa = await ins('PAPA-001');
+    const aceite = await ins('ACEITE-001');
+    const sal = await ins('SAL-001');
+    const env = await ins('ENV-90');
+    if (papa && aceite && sal && env) {
+      const detalles = [
+        { insumo: papa, cant: 12, unidad: 'kg', merma: 10 },
+        { insumo: aceite, cant: 3, unidad: 'litros', merma: 0 },
+        { insumo: sal, cant: 0.3, unidad: 'kg', merma: 0 },
+        { insumo: env, cant: 50, unidad: 'unidades', merma: 2 },
+      ];
+      let costoTotal = D(0);
+      const detalleData = detalles.map((d, i) => {
+        const costoLinea = d.insumo.costoActual.times(d.cant);
+        costoTotal = costoTotal.plus(costoLinea);
+        return {
+          insumoId: d.insumo.id,
+          cantidadRequerida: D(d.cant),
+          unidadMedida: d.unidad,
+          porcentajeMerma: D(d.merma),
+          cantidadConMerma: D(d.cant * (1 + d.merma / 100)),
+          costoUnitario: d.insumo.costoActual,
+          costoTotal: costoLinea,
+          orden: i + 1,
+        };
+      });
+      await prisma.receta.create({
+        data: {
+          codigo: 'REC-PAPA-90-01',
+          productoId: papa90.id,
+          version: 1,
+          rendimientoEsperado: D(50),
+          unidadRendimiento: 'unidades',
+          costoTotalEsperado: costoTotal,
+          activa: true,
+          detalles: { create: detalleData },
+        },
+      });
+      await prisma.producto.update({
+        where: { id: papa90.id },
+        data: { costoPromedio: costoTotal.dividedBy(50) },
+      });
+    }
+  }
+  console.log(`✓ ${productos.length} productos (+ receta de Papas 90gr)`);
+}
+
+async function seedEmpleados() {
+  const empleados = [
+    { dni: '25123456', nombre: 'Juan', apellido: 'García', puesto: 'Operario de Producción', ingreso: '2018-03-15', basico: 480000 },
+    { dni: '27987654', nombre: 'María', apellido: 'López', puesto: 'Encargada de Ventas', ingreso: '2021-06-01', basico: 620000 },
+    { dni: '30111222', nombre: 'Carlos', apellido: 'Pérez', puesto: 'Operario de Producción', ingreso: '2023-01-10', basico: 450000 },
+  ];
+  for (const e of empleados) {
+    const existe = await prisma.empleado.findUnique({ where: { dni: e.dni } });
+    if (existe) continue;
+    const emp = await prisma.empleado.create({
+      data: {
+        dni: e.dni,
+        nombre: e.nombre,
+        apellido: e.apellido,
+        puesto: e.puesto,
+        departamento: 'Producción',
+        fechaIngreso: new Date(e.ingreso),
+        estado: 'ACTIVO',
+      },
+    });
+    await prisma.estructuraSalarial.create({
+      data: {
+        empleadoId: emp.id,
+        sueldoBasico: D(e.basico),
+        tarifaHoraria: D(Math.round(e.basico / 200)),
+        bonoFijo: D(0),
+        fechaInicio: new Date('2024-01-01'),
+        vigente: true,
+      },
+    });
+  }
+  console.log(`✓ ${empleados.length} empleados con estructura salarial`);
+}
+
 async function main() {
   console.log('Seeding...');
   await seedUsuarios();
   await seedInsumos();
   await seedConfiguracionRRHH();
+  await seedProductosYRecetas();
+  await seedEmpleados();
   console.log('Seed completo ✅');
 }
 

@@ -1,70 +1,142 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { MatTableModule } from '@angular/material/table';
-import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatDialog } from '@angular/material/dialog';
-import { MatChipsModule } from '@angular/material/chips';
 import { debounceTime } from 'rxjs';
 import { InsumoService } from '../../core/services/insumo.service';
 import { AuthService } from '../../core/services/auth.service';
 import { InsumoListItem } from '../../core/models/insumo.model';
 import { MovimientoDialog } from './movimiento-dialog';
 import { InsumoFormDialog } from './insumo-form-dialog';
+import { Paginator } from '../../shared/ui/paginator';
 
 @Component({
   selector: 'app-inventario',
-  imports: [
-    DecimalPipe,
-    ReactiveFormsModule,
-    MatTableModule,
-    MatPaginatorModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatButtonModule,
-    MatIconModule,
-    MatTooltipModule,
-    MatProgressBarModule,
-    MatChipsModule,
-  ],
-  templateUrl: './inventario.html',
-  styleUrl: './inventario.scss',
+  imports: [DecimalPipe, ReactiveFormsModule, MovimientoDialog, InsumoFormDialog, Paginator],
+  template: `
+    <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <h2 class="page-title">Inventario de insumos</h2>
+        <p class="text-sm text-slate-500">Materia prima, envases y servicios.</p>
+      </div>
+      @if (puedeMover()) {
+        <button class="btn btn-primary" (click)="mostrarNuevo.set(true)">
+          <span class="material-icons text-[20px]">add</span> Nuevo insumo
+        </button>
+      }
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4 flex flex-wrap items-center gap-3 p-3">
+      <div class="relative min-w-64 flex-1">
+        <span class="material-icons absolute top-1/2 left-3 -translate-y-1/2 text-[20px] text-slate-400">search</span>
+        <input class="input pl-10" [formControl]="searchCtrl" placeholder="Buscar por nombre o código…" />
+      </div>
+      <select class="select w-48" [formControl]="categoriaCtrl">
+        <option value="">Todas las categorías</option>
+        @for (c of categorias(); track c) {
+          <option [value]="c">{{ c }}</option>
+        }
+      </select>
+      <button
+        class="btn"
+        [class.btn-primary]="soloStockBajo()"
+        [class.btn-outline]="!soloStockBajo()"
+        (click)="toggleStockBajo()"
+      >
+        <span class="material-icons text-[20px]">warning</span>
+        {{ soloStockBajo() ? 'Mostrando alertas' : 'Solo stock bajo' }}
+      </button>
+    </div>
+
+    <!-- Tabla -->
+    <div class="card overflow-hidden">
+      @if (loading()) {
+        <div class="h-1 w-full overflow-hidden bg-brand-100">
+          <div class="h-full w-1/3 animate-[loading_1s_infinite] bg-brand-500"></div>
+        </div>
+      }
+      <div class="overflow-x-auto">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Código</th><th>Nombre</th><th>Categoría</th><th>Stock</th>
+              <th>Estado</th><th class="text-right">Costo unit.</th>
+              @if (puedeMover()) { <th class="text-right">Acciones</th> }
+            </tr>
+          </thead>
+          <tbody>
+            @for (i of insumos(); track i.id) {
+              <tr>
+                <td class="font-mono text-xs text-slate-500">{{ i.codigo }}</td>
+                <td class="font-medium text-slate-800">{{ i.nombre }}</td>
+                <td><span class="badge badge-neutral">{{ i.categoria }}</span></td>
+                <td>{{ i.stock_actual | number: '1.0-2' }} {{ i.unidad_medida }}</td>
+                <td><span class="badge badge-{{ i.estado_stock.toLowerCase() }}">{{ i.estado_stock }}</span></td>
+                <td class="text-right tabular-nums">\${{ i.costo_actual | number: '1.2-2' }}</td>
+                @if (puedeMover()) {
+                  <td>
+                    <div class="flex justify-end gap-1">
+                      <button class="btn-icon rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                        title="Ingreso" (click)="abrir(i, 'ingreso')">
+                        <span class="material-icons text-[20px]">add</span>
+                      </button>
+                      <button class="btn-icon rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100"
+                        title="Egreso" (click)="abrir(i, 'egreso')">
+                        <span class="material-icons text-[20px]">remove</span>
+                      </button>
+                    </div>
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (!loading() && insumos().length === 0) {
+        <div class="p-12 text-center text-slate-400">
+          <span class="material-icons mb-2 text-4xl">inventory_2</span>
+          <p>No se encontraron insumos.</p>
+        </div>
+      }
+
+      <app-paginator [page]="page()" [limit]="limit()" [total]="total()" (pageChange)="onPage($event)" />
+    </div>
+
+    @if (movimiento(); as m) {
+      <app-movimiento-dialog
+        [insumo]="m.insumo"
+        [tipo]="m.tipo"
+        (saved)="onSaved()"
+        (closed)="movimiento.set(null)"
+      />
+    }
+    @if (mostrarNuevo()) {
+      <app-insumo-form-dialog (saved)="onSaved()" (closed)="mostrarNuevo.set(false)" />
+    }
+  `,
+  styles: `
+    @keyframes loading { 0% { transform: translateX(-100%);} 100% { transform: translateX(400%);} }
+  `,
 })
 export class Inventario implements OnInit {
   private service = inject(InsumoService);
-  private dialog = inject(MatDialog);
   private auth = inject(AuthService);
-
-  readonly columnas = [
-    'codigo',
-    'nombre',
-    'categoria',
-    'stock_actual',
-    'estado',
-    'costo_actual',
-    'acciones',
-  ];
 
   readonly insumos = signal<InsumoListItem[]>([]);
   readonly categorias = signal<string[]>([]);
   readonly loading = signal(false);
   readonly total = signal(0);
-  readonly page = signal(0);
+  readonly page = signal(1);
   readonly limit = signal(10);
   readonly soloStockBajo = signal(false);
+
+  readonly movimiento = signal<{ insumo: InsumoListItem; tipo: 'ingreso' | 'egreso' } | null>(null);
+  readonly mostrarNuevo = signal(false);
 
   readonly searchCtrl = new FormControl('', { nonNullable: true });
   readonly categoriaCtrl = new FormControl('', { nonNullable: true });
 
-  readonly puedeEditar = computed(() => this.auth.hasRole('GERENTE'));
   readonly puedeMover = computed(() => this.auth.hasRole('GERENTE', 'OPERARIO'));
 
   ngOnInit() {
@@ -72,11 +144,11 @@ export class Inventario implements OnInit {
     this.service.categorias().subscribe((res) => this.categorias.set(res.data));
 
     this.searchCtrl.valueChanges.pipe(debounceTime(350)).subscribe(() => {
-      this.page.set(0);
+      this.page.set(1);
       this.cargar();
     });
     this.categoriaCtrl.valueChanges.subscribe(() => {
-      this.page.set(0);
+      this.page.set(1);
       this.cargar();
     });
   }
@@ -85,7 +157,7 @@ export class Inventario implements OnInit {
     this.loading.set(true);
     this.service
       .listar({
-        page: this.page() + 1,
+        page: this.page(),
         limit: this.limit(),
         search: this.searchCtrl.value || undefined,
         categoria: this.categoriaCtrl.value || undefined,
@@ -101,29 +173,24 @@ export class Inventario implements OnInit {
       });
   }
 
-  onPage(e: PageEvent) {
-    this.page.set(e.pageIndex);
-    this.limit.set(e.pageSize);
+  onPage(p: number) {
+    this.page.set(p);
     this.cargar();
   }
 
   toggleStockBajo() {
     this.soloStockBajo.update((v) => !v);
-    this.page.set(0);
+    this.page.set(1);
     this.cargar();
   }
 
-  abrirMovimiento(insumo: InsumoListItem, tipo: 'ingreso' | 'egreso') {
-    this.dialog
-      .open(MovimientoDialog, { data: { insumo, tipo } })
-      .afterClosed()
-      .subscribe((ok) => ok && this.cargar());
+  abrir(insumo: InsumoListItem, tipo: 'ingreso' | 'egreso') {
+    this.movimiento.set({ insumo, tipo });
   }
 
-  nuevoInsumo() {
-    this.dialog
-      .open(InsumoFormDialog)
-      .afterClosed()
-      .subscribe((ok) => ok && this.cargar());
+  onSaved() {
+    this.movimiento.set(null);
+    this.mostrarNuevo.set(false);
+    this.cargar();
   }
 }
