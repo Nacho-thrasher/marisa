@@ -64,6 +64,12 @@ export const routes: Routes = [
         data: { roles: ['CONTADOR'] },
         loadComponent: () => import('./features/auditoria/auditoria').then((m) => m.Auditoria),
       },
+      {
+        path: 'usuarios',
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN'] },
+        loadComponent: () => import('./features/usuarios/usuarios').then((m) => m.Usuarios),
+      },
     ],
   },
   { path: '**', redirectTo: '' },

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authRouter } from './modules/auth/auth.routes.js';
+import { usuariosRouter } from './modules/usuarios/usuarios.routes.js';
 import { insumosRouter } from './modules/insumos/insumos.routes.js';
 import { productosRouter } from './modules/productos/productos.routes.js';
 import { produccionRouter } from './modules/produccion/produccion.routes.js';
@@ -17,6 +18,7 @@ apiRouter.get('/health', (_req, res) => {
 });
 
 apiRouter.use('/auth', authRouter);
+apiRouter.use('/usuarios', usuariosRouter);
 apiRouter.use('/insumos', insumosRouter);
 apiRouter.use('/productos', productosRouter);
 apiRouter.use('/produccion', produccionRouter);

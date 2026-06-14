@@ -51,6 +51,30 @@ npm start                   # http://localhost:4200
 | rrhh     | Rrhh123!     | RRHH     |
 | contador | Contador123! | CONTADOR |
 
+## Gestión de usuarios
+
+El rol **ADMIN** tiene una sección **Usuarios** (menú → Administración) para crear
+cuentas con cualquier rol, editar rol/email, activar/desactivar y restablecer
+contraseñas. El backend protege estos endpoints con `requireRole('ADMIN')` y evita
+que el sistema quede sin ningún administrador activo.
+
+## Puesta en producción (reset a un solo admin)
+
+Para arrancar producción con **un único administrador + el catálogo** (insumos,
+productos con listas de precios, recetas, vendedores y configuración de aportes),
+sin datos demo (clientes, empleados, ventas, nómina):
+
+```bash
+cd backend
+# Definí el admin por entorno (en Railway → Variables):
+#   ADMIN_USERNAME, ADMIN_EMAIL, ADMIN_PASSWORD
+npm run seed:reset -- --force      # ⚠️ BORRA todos los datos
+```
+
+El script es **destructivo** y exige `--force` (o `CONFIRM_RESET=YES`) para ejecutarse,
+de modo que nunca corre solo en un deploy. Si no se definen las variables, usa
+`admin / Admin123!` como fallback (cambiala en el primer ingreso).
+
 ## Estado del desarrollo
 
 - [x] Base del monorepo + esquema de BD completo (27 tablas)
