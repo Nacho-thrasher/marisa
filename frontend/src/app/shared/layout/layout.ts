@@ -169,6 +169,7 @@ export class Layout implements OnInit {
     { label: 'Pedido diario', icon: 'edit_note', route: '/pedidos', roles: ['GERENTE', 'OPERARIO'], section: 'Comercial' },
     { label: 'Ventas', icon: 'point_of_sale', route: '/ventas', roles: ['GERENTE'], section: 'Comercial' },
     { label: 'Clientes', icon: 'storefront', route: '/clientes', roles: ['GERENTE'], section: 'Comercial' },
+    { label: 'Vendedores', icon: 'badge', route: '/vendedores', roles: ['GERENTE'], section: 'Comercial' },
     { label: 'Reporte mensual', icon: 'bar_chart', route: '/reportes', roles: ['GERENTE', 'CONTADOR'], section: 'Comercial' },
     { label: 'Nómina', icon: 'groups', route: '/nomina', roles: ['RRHH'], section: 'Administración' },
     { label: 'Auditoría', icon: 'fact_check', route: '/auditoria', roles: ['CONTADOR'], section: 'Administración' },

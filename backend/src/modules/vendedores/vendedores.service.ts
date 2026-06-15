@@ -2,9 +2,9 @@ import type { Request } from 'express';
 import { prisma } from '../../config/prisma.js';
 import { audit } from '../../utils/audit.js';
 
-export async function listar() {
+export async function listar(activosSolo = true) {
   const rows = await prisma.vendedor.findMany({
-    where: { activo: true },
+    where: activosSolo ? { activo: true } : {},
     include: { _count: { select: { clientes: true } } },
     orderBy: { nombre: 'asc' },
   });
@@ -13,6 +13,7 @@ export async function listar() {
     nombre: v.nombre,
     zona: v.zona,
     telefono: v.telefono,
+    activo: v.activo,
     clientes: v._count.clientes,
   }));
 }
@@ -29,7 +30,7 @@ export async function crear(req: Request, input: CrearInput) {
   return v;
 }
 
-export async function actualizar(req: Request, id: bigint, input: Partial<CrearInput>) {
+export async function actualizar(req: Request, id: bigint, input: Partial<CrearInput> & { activo?: boolean }) {
   const v = await prisma.vendedor.update({ where: { id }, data: input });
   await audit(req, { accion: 'EDITAR', modulo: 'ventas', tablaAfectada: 'vendedores', registroId: id, valoresNuevos: input });
   return v;

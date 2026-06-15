@@ -53,6 +53,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/clientes/clientes').then((m) => m.Clientes),
       },
       {
+        path: 'vendedores',
+        canActivate: [roleGuard],
+        data: { roles: ['GERENTE'] },
+        loadComponent: () => import('./features/vendedores/vendedores').then((m) => m.Vendedores),
+      },
+      {
         path: 'reportes',
         canActivate: [roleGuard],
         data: { roles: ['GERENTE', 'CONTADOR'] },

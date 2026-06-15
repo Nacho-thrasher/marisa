@@ -15,7 +15,12 @@ const schema = z.object({
   telefono: z.string().optional(),
 });
 
-vendedoresRouter.get('/', asyncHandler(async (_req, res) => ok(res, await service.listar())));
+const updateSchema = schema.partial().extend({ activo: z.boolean().optional() });
+
+vendedoresRouter.get(
+  '/',
+  asyncHandler(async (req, res) => ok(res, await service.listar(req.query.activos_solo !== 'false'))),
+);
 vendedoresRouter.post(
   '/',
   requireRole('GERENTE'),
@@ -24,7 +29,7 @@ vendedoresRouter.post(
 vendedoresRouter.patch(
   '/:id',
   requireRole('GERENTE'),
-  asyncHandler(async (req, res) => ok(res, await service.actualizar(req, BigInt(req.params.id), schema.partial().parse(req.body)))),
+  asyncHandler(async (req, res) => ok(res, await service.actualizar(req, BigInt(req.params.id), updateSchema.parse(req.body)))),
 );
 vendedoresRouter.delete(
   '/:id',
