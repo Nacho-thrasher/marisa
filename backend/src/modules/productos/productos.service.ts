@@ -216,7 +216,7 @@ export async function crearReceta(req: Request, productoId: bigint, input: Crear
     if (!insumo) throw AppError.badRequest(`Insumo ${det.insumo_id} no existe`);
     const merma = det.porcentaje_merma ?? 0;
     const cantidadConMerma = D(det.cantidad_requerida).times(1 + merma / 100);
-    const costoLinea = insumo.costoActual.times(det.cantidad_requerida);
+    const costoLinea = insumo.costoActual.times(cantidadConMerma);
     costoTotal = costoTotal.plus(costoLinea);
     return {
       insumoId: insumo.id,

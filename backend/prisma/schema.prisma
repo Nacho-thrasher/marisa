@@ -232,7 +232,7 @@ model Producto {
 
 model Receta {
   id                  BigInt   @id @default(autoincrement())
-  codigo              String   @unique @db.VarChar(50)
+  codigo              String   @db.VarChar(50)
   productoId          BigInt   @map("producto_id")
   version             Int      @default(1)
   rendimientoEsperado Decimal  @map("rendimiento_esperado") @db.Decimal(10, 3)
@@ -250,6 +250,7 @@ model Receta {
   detalles  RecetaDetalle[]
   ordenes   OrdenProduccion[]
 
+  @@unique([codigo, version])
   @@index([productoId])
   @@index([activa])
   @@map("recetas")

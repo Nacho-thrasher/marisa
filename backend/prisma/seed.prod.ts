@@ -2,21 +2,19 @@ import {
   prisma,
   wipeAll,
   crearAdmin,
-  seedInsumos,
   seedConfiguracionRRHH,
-  seedProductosYRecetas,
-  seedVendedores,
 } from './seed-helpers.js';
 
 /**
  * RESET DE PRODUCCIÓN (destructivo).
  *
- * Borra TODOS los datos y deja la base lista para arrancar:
+ * Borra TODOS los datos y deja la base completamente vacía, lista para
+ * cargar desde cero:
  *   • 1 usuario administrador (de ADMIN_USERNAME / ADMIN_EMAIL / ADMIN_PASSWORD)
- *   • catálogo: insumos + stock, productos con listas de precios, recetas,
- *     vendedores y configuración de aportes/antigüedad.
+ *   • configuración de aportes/escalas de antigüedad (necesaria para Nómina)
  *
- * NO crea: clientes, empleados, ventas ni nómina (se cargan desde la app).
+ * NO crea: insumos, productos, recetas, vendedores, clientes, empleados,
+ * ventas ni nómina — todo eso se carga desde la app.
  *
  * Protección: requiere `--force` o CONFIRM_RESET=YES para ejecutarse.
  *   npm run seed:reset -- --force
@@ -33,11 +31,8 @@ async function main() {
   console.log('♻️  Reset de producción...');
   await wipeAll();
   await crearAdmin();
-  await seedInsumos();
   await seedConfiguracionRRHH();
-  await seedProductosYRecetas();
-  await seedVendedores();
-  console.log('Reset completo ✅  — base lista con 1 admin + catálogo.');
+  console.log('Reset completo ✅  — base lista con 1 admin y sin datos de catálogo.');
 }
 
 main()

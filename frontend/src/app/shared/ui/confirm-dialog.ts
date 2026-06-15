@@ -43,14 +43,16 @@ import { ConfirmService, ConfirmTone } from './confirm.service';
                     class="textarea"
                     rows="3"
                     [placeholder]="st.placeholder || ''"
-                    [(ngModel)]="value"
+                    [ngModel]="value()"
+                    (ngModelChange)="value.set($event)"
                   ></textarea>
                 } @else {
                   <input
                     #field
                     class="input"
                     [placeholder]="st.placeholder || ''"
-                    [(ngModel)]="value"
+                    [ngModel]="value()"
+                    (ngModelChange)="value.set($event)"
                     (keydown.enter)="confirm()"
                   />
                 }
@@ -76,14 +78,14 @@ import { ConfirmService, ConfirmTone } from './confirm.service';
 export class ConfirmDialog {
   private svc = inject(ConfirmService);
   readonly s = this.svc.state;
-  value = '';
+  readonly value = signal('');
 
   constructor() {
     // Sincroniza el valor inicial del prompt cada vez que se abre un diálogo.
     effect(() => {
       const st = this.s();
       if (st?.kind === 'prompt') {
-        this.value = st.initialValue ?? '';
+        this.value.set(st.initialValue ?? '');
         queueMicrotask(() => {
           const el = document.querySelector<HTMLInputElement | HTMLTextAreaElement>(
             'app-confirm-dialog .input, app-confirm-dialog .textarea',
@@ -97,7 +99,7 @@ export class ConfirmDialog {
   readonly canConfirm = computed(() => {
     const st = this.s();
     if (!st) return false;
-    if (st.kind === 'prompt' && st.required) return this.value.trim().length > 0;
+    if (st.kind === 'prompt' && st.required) return this.value().trim().length > 0;
     return true;
   });
 
@@ -117,7 +119,7 @@ export class ConfirmDialog {
     const st = this.s();
     if (!st) return;
     if (!this.canConfirm()) return;
-    this.svc.settle(st.kind === 'prompt' ? this.value.trim() : true);
+    this.svc.settle(st.kind === 'prompt' ? this.value().trim() : true);
   }
 
   cancel() {

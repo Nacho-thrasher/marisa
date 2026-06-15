@@ -156,7 +156,9 @@ export class ProductoRecetaDialog implements OnInit {
     return this.lineas().reduce((acc, l) => {
       const ins = this.insumos().find((x) => x.id === l.insumo_id);
       const costo = ins ? Number(ins.costo_actual) : 0;
-      return acc + costo * (Number(l.cantidad_requerida) || 0);
+      const cantidad = Number(l.cantidad_requerida) || 0;
+      const merma = Number(l.porcentaje_merma) || 0;
+      return acc + costo * cantidad * (1 + merma / 100);
     }, 0);
   }
 
