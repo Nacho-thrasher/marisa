@@ -50,22 +50,51 @@ export async function seedUsuariosDemo() {
 
 // ─────────────────────── CATÁLOGO (datos reales) ───────────────────────
 
+/** Falta cargar precio, costo y stock real desde Inventario para este insumo. */
+const PENDIENTE = 'Cargado desde planilla "Materia prima" (mar-2026). Falta completar precio, costo y stock desde Inventario.';
+
 export async function seedInsumos() {
-  // Insumos base (docs/01_REQUISITOS_FUNCIONALES.md RF-MP-004). Precios demo.
+  // Materia prima e insumos reales (planilla "Vendedores y materia prima", marzo 2026).
+  // La planilla no trae precios, unidades ni stock: se cargan en $0 / 0,
+  // marcados como pendientes, para completar después desde Inventario.
   const insumos = [
-    { codigo: 'PAPA-001', nombre: 'Papa fresca', categoria: 'papas_fritas', unidad: 'kg', precio: 250, min: 100, crit: 40 },
-    { codigo: 'ACEITE-001', nombre: 'Aceite de girasol', categoria: 'papas_fritas', unidad: 'litros', precio: 1800, min: 50, crit: 20 },
-    { codigo: 'SAL-001', nombre: 'Sal fina', categoria: 'general', unidad: 'kg', precio: 300, min: 30, crit: 10 },
-    { codigo: 'ENV-45', nombre: 'Envase 45gr', categoria: 'envases', unidad: 'unidades', precio: 20, min: 2000, crit: 500 },
-    { codigo: 'ENV-90', nombre: 'Envase 90gr', categoria: 'envases', unidad: 'unidades', precio: 28, min: 2000, crit: 500 },
-    { codigo: 'HARINA-001', nombre: 'Harina 000', categoria: 'panificados', unidad: 'kg', precio: 600, min: 200, crit: 50 },
-    { codigo: 'GRASA-001', nombre: 'Grasa vacuna', categoria: 'panificados', unidad: 'kg', precio: 1200, min: 40, crit: 15 },
-    { codigo: 'AZUCAR-001', nombre: 'Azúcar', categoria: 'panificados', unidad: 'kg', precio: 800, min: 50, crit: 20 },
-    { codigo: 'LEVADURA-001', nombre: 'Levadura', categoria: 'panificados', unidad: 'kg', precio: 2500, min: 10, crit: 3 },
-    { codigo: 'MALTA-001', nombre: 'Malta', categoria: 'panificados', unidad: 'kg', precio: 1500, min: 10, crit: 3 },
-    { codigo: 'MANI-001', nombre: 'Maní', categoria: 'mani', unidad: 'kg', precio: 1700, min: 80, crit: 30 },
-    { codigo: 'SALSA-001', nombre: 'Salsa de tomate', categoria: 'prepizza', unidad: 'litros', precio: 900, min: 30, crit: 10 },
-    { codigo: 'VINAGRE-001', nombre: 'Vinagre', categoria: 'prepizza', unidad: 'litros', precio: 500, min: 20, crit: 5 },
+    // Materia prima
+    { codigo: 'MP-001', nombre: 'Aceite', descripcion: 'Bidón x 4,5 lts', categoria: 'general', unidad: 'litros' },
+    { codigo: 'MP-002', nombre: 'Ácido Cítrico', descripcion: 'x 1 kg', categoria: 'aditivos', unidad: 'kg' },
+    { codigo: 'MP-003', nombre: 'Antimoho', descripcion: 'x 1 kg', categoria: 'aditivos', unidad: 'kg' },
+    { codigo: 'MP-004', nombre: 'Azúcar', descripcion: 'Bolsa x 50 kg', categoria: 'panificados', unidad: 'kg' },
+    { codigo: 'MP-005', nombre: 'Celusal', descripcion: 'x 25 kg', categoria: 'aditivos', unidad: 'kg' },
+    { codigo: 'MP-006', nombre: 'Chizo', descripcion: 'x 1 kg', categoria: 'aditivos', unidad: 'kg' },
+    { codigo: 'MP-007', nombre: 'Colorante', descripcion: 'x 1 kg', categoria: 'aditivos', unidad: 'kg' },
+    { codigo: 'MP-008', nombre: 'Extracto de Malta', descripcion: 'x 14 kg', categoria: 'panificados', unidad: 'kg' },
+    { codigo: 'MP-009', nombre: 'Grasa Carreta', descripcion: 'x 10 kg', categoria: 'panificados', unidad: 'kg' },
+    { codigo: 'MP-010', nombre: 'Harina Panettieri', descripcion: 'Bolsa x 25 kg', categoria: 'panificados', unidad: 'kg' },
+    { codigo: 'MP-011', nombre: 'Levadura Ángel', descripcion: 'Caja x 20 paquetes de 500 grs', categoria: 'panificados', unidad: 'paquete x 500g' },
+    { codigo: 'MP-012', nombre: 'Maní crudo', descripcion: 'x 1 kg', categoria: 'mani', unidad: 'kg' },
+    { codigo: 'MP-013', nombre: 'Margarina Masa y Batido', descripcion: 'Balde x 10 kg', categoria: 'panificados', unidad: 'kg' },
+    { codigo: 'MP-014', nombre: 'Papa', descripcion: 'Bolsa x 20 kg', categoria: 'papas_fritas', unidad: 'kg' },
+    { codigo: 'MP-015', nombre: 'Puflo', descripcion: 'x 1 kg', categoria: 'aditivos', unidad: 'kg' },
+    { codigo: 'MP-016', nombre: 'Rofama', descripcion: 'Aditivo, x 5 kg', categoria: 'aditivos', unidad: 'kg' },
+    { codigo: 'MP-017', nombre: 'Sal', descripcion: 'Bolsa x 25 kg', categoria: 'general', unidad: 'kg' },
+    { codigo: 'MP-018', nombre: 'Salsa', descripcion: 'x 10 lts', categoria: 'prepizza', unidad: 'litros' },
+    { codigo: 'MP-019', nombre: 'Sésamo', descripcion: 'Bolsa x 25 kg', categoria: 'panificados', unidad: 'kg' },
+    { codigo: 'MP-020', nombre: 'Sorbato de Potasio', descripcion: 'x 1 kg', categoria: 'aditivos', unidad: 'kg' },
+    { codigo: 'MP-021', nombre: 'Vinagre', descripcion: 'Bidón x 4,5 lts', categoria: 'general', unidad: 'litros' },
+    // Envases
+    { codigo: 'EN-001', nombre: 'Bobina Ambort - Papa', descripcion: 'Film de envasado por kg, línea Papa', categoria: 'envases', unidad: 'kg' },
+    { codigo: 'EN-002', nombre: 'Bolsa Papa x 500g', descripcion: 'Medida 30x50x50, paquete x 100 unidades', categoria: 'envases', unidad: 'unidades' },
+    { codigo: 'EN-003', nombre: 'Bolsa Papa x Kg', descripcion: 'Medida 30x60x50, paquete x 100 unidades', categoria: 'envases', unidad: 'unidades' },
+    { codigo: 'EN-004', nombre: 'Bolsa Palitos Salados x Kg', descripcion: 'Medida 20x40x50, paquete x 100 unidades', categoria: 'envases', unidad: 'unidades' },
+    { codigo: 'EN-005', nombre: 'Bolsa Palitos Salados x 500g', descripcion: 'Medida 15x30x50, paquete x 100 unidades', categoria: 'envases', unidad: 'unidades' },
+    { codigo: 'EN-006', nombre: 'Bolsa Maní x Kg', descripcion: 'Medida 18x30x50, paquete x 100 unidades', categoria: 'envases', unidad: 'unidades' },
+    { codigo: 'EN-007', nombre: 'Bolsa Maní x 500g', descripcion: 'Medida 15x30x50, paquete x 100 unidades', categoria: 'envases', unidad: 'unidades' },
+    { codigo: 'EN-008', nombre: 'Bolsa P.M. x 150g', descripcion: 'Medida 20x45x40, paquete x 100 unidades', categoria: 'envases', unidad: 'unidades' },
+    { codigo: 'EN-009', nombre: 'Bolsa P.M. x 300g', descripcion: 'Medida 30x60x40, paquete x 100 unidades', categoria: 'envases', unidad: 'unidades' },
+    { codigo: 'EN-010', nombre: 'Bolsa Especial', descripcion: 'Medida 36x40x30, paquete x 100 unidades', categoria: 'envases', unidad: 'unidades' },
+    { codigo: 'EN-011', nombre: 'Bolsa Común', descripcion: 'Medida 36x38x30, paquete x 100 unidades', categoria: 'envases', unidad: 'unidades' },
+    { codigo: 'EN-012', nombre: 'Bolsa Viena', descripcion: 'Medida 22x24x40, paquete x 100 unidades', categoria: 'envases', unidad: 'unidades' },
+    { codigo: 'EN-013', nombre: 'Bolsa Hamburguesa', descripcion: 'Medida 22x35x40, paquete x 100 unidades', categoria: 'envases', unidad: 'unidades' },
+    { codigo: 'EN-014', nombre: 'Bolsa Paty', descripcion: 'Medida 22x30x40, paquete x 100 unidades', categoria: 'envases', unidad: 'unidades' },
   ];
 
   for (const i of insumos) {
@@ -75,29 +104,29 @@ export async function seedInsumos() {
       create: {
         codigo: i.codigo,
         nombre: i.nombre,
+        descripcion: i.descripcion,
         categoria: i.categoria,
         unidadMedida: i.unidad,
-        precioUnitario: D(i.precio),
-        costoActual: D(i.precio),
-        stockMinimo: D(i.min),
-        stockCritico: D(i.crit),
+        precioUnitario: D(0),
+        costoActual: D(0),
+        stockMinimo: D(0),
+        stockCritico: D(0),
+        observaciones: PENDIENTE,
       },
     });
 
-    // Stock inicial demo: 3x el mínimo, para que casi todos estén "OK".
-    const cantidad = D(i.min * 3);
     await prisma.stockActual.upsert({
       where: { insumoId: insumo.id },
-      update: { cantidadStock: cantidad, valorStock: cantidad.times(i.precio) },
+      update: {},
       create: {
         insumoId: insumo.id,
-        cantidadStock: cantidad,
-        valorStock: cantidad.times(i.precio),
+        cantidadStock: D(0),
+        valorStock: D(0),
         ultimoMovimiento: new Date(),
       },
     });
   }
-  console.log(`✓ ${insumos.length} insumos con stock inicial`);
+  console.log(`✓ ${insumos.length} insumos (materia prima y envases) — pendiente completar precio/costo/stock`);
 }
 
 export async function seedConfiguracionRRHH() {
@@ -267,17 +296,25 @@ export async function seedProductosYRecetas() {
   console.log(`✓ ${productos.length} productos (+ receta de Papas 90gr)`);
 }
 
-/** Vendedores reales (hojas del Excel) con zona de venta en Salta. */
+/** Vendedores reales (planilla "Vendedores y materia prima", marzo 2026). */
 export async function seedVendedores() {
   const vendedores = [
-    { nombre: 'Angel', zona: 'Centro' },
-    { nombre: 'Bravo', zona: 'Norte' },
-    { nombre: 'Carlos', zona: 'Sur' },
-    { nombre: 'Damian', zona: 'Oeste' },
-    { nombre: 'Gustavo', zona: 'Norte' },
-    { nombre: 'Hugo', zona: 'Centro' },
-    { nombre: 'Juan', zona: 'Este' },
-    { nombre: 'Lucio', zona: 'Sur' },
+    { nombre: 'Garcia Hugo', zona: 'Sur' },
+    { nombre: 'Rangeon Carlos', zona: 'Sur' },
+    { nombre: 'Jimenez Claudio', zona: 'Varias' },
+    { nombre: 'Bravo Daniel', zona: 'San Luis' },
+    { nombre: 'Carmona Damian', zona: 'Centro/Sur' },
+    { nombre: 'Zulca Daniel', zona: 'Varias' },
+    { nombre: 'Flores Jose', zona: 'Varias' },
+    { nombre: 'Jimena', zona: 'Norte' },
+    { nombre: 'Florez Renzo', zona: 'Varias' },
+    { nombre: 'Angel', zona: 'Varias' },
+    { nombre: 'Ariel', zona: 'Varias' },
+    { nombre: 'Dorini Alexis', zona: 'Varias' },
+    { nombre: 'Marcelo Juan', zona: 'Varias' },
+    { nombre: 'Lucio', zona: 'Varias' },
+    { nombre: 'Alanis Matias', zona: 'Varias' },
+    { nombre: 'Rosales Jose', zona: 'Varias' },
   ];
   for (const v of vendedores) {
     const existe = await prisma.vendedor.findFirst({ where: { nombre: v.nombre } });
@@ -292,11 +329,11 @@ export async function seedClientesDemo() {
   for (const v of await prisma.vendedor.findMany()) vendMap.set(v.nombre, v.id);
 
   const clientes = [
-    { nombre: 'Claudio', tipoLista: 'REVENDEDOR' as const, zona: 'Centro', localidad: 'Salta', vend: 'Hugo' },
+    { nombre: 'Claudio', tipoLista: 'REVENDEDOR' as const, zona: 'Centro', localidad: 'Salta', vend: 'Garcia Hugo' },
     { nombre: 'Lucio Fiambrería', tipoLista: 'COMERCIO' as const, zona: 'Sur', localidad: 'Salta', vend: 'Lucio' },
-    { nombre: 'Kiosco El Sol', tipoLista: 'COMERCIO' as const, zona: 'Norte', localidad: 'Salta', vend: 'Bravo' },
-    { nombre: 'Distribuidora del Valle', tipoLista: 'MAYORISTA' as const, zona: 'Oeste', localidad: 'Salta', vend: 'Damian' },
-    { nombre: 'Almacén Doña Rosa', tipoLista: 'COMERCIO' as const, zona: 'Este', localidad: 'Cerrillos', vend: 'Juan' },
+    { nombre: 'Kiosco El Sol', tipoLista: 'COMERCIO' as const, zona: 'Norte', localidad: 'Salta', vend: 'Bravo Daniel' },
+    { nombre: 'Distribuidora del Valle', tipoLista: 'MAYORISTA' as const, zona: 'Oeste', localidad: 'Salta', vend: 'Carmona Damian' },
+    { nombre: 'Almacén Doña Rosa', tipoLista: 'COMERCIO' as const, zona: 'Este', localidad: 'Cerrillos', vend: 'Marcelo Juan' },
   ];
   for (const c of clientes) {
     const existe = await prisma.cliente.findFirst({ where: { nombre: c.nombre } });

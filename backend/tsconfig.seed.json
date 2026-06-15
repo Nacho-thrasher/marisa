@@ -4,5 +4,5 @@
     "rootDir": ".",
     "outDir": "./dist"
   },
-  "include": ["prisma/seed.prod.ts", "prisma/seed-helpers.ts", "prisma/reset-datos.ts", "prisma/seed-productos.ts"]
+  "include": ["prisma/seed.prod.ts", "prisma/seed-helpers.ts", "prisma/reset-datos.ts", "prisma/seed-productos.ts", "prisma/seed-vendedores.ts", "prisma/seed-insumos.ts"]
 }

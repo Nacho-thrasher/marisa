@@ -17,6 +17,10 @@
     "reset:datos:prod": "node dist/prisma/reset-datos.js",
     "seed:productos": "tsx prisma/seed-productos.ts",
     "seed:productos:prod": "node dist/prisma/seed-productos.js",
+    "seed:vendedores": "tsx prisma/seed-vendedores.ts",
+    "seed:vendedores:prod": "node dist/prisma/seed-vendedores.js",
+    "seed:insumos": "tsx prisma/seed-insumos.ts",
+    "seed:insumos:prod": "node dist/prisma/seed-insumos.js",
     "postinstall": "prisma generate"
   },
   "prisma": {
