@@ -73,45 +73,58 @@ import { DescargasService } from '../../core/services/descargas.service';
       </div>
 
       <div class="card overflow-hidden">
-        <div class="border-b border-slate-100 px-5 py-3 font-semibold text-slate-900">Detalle por día</div>
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 px-5 py-3.5">
+          <span class="font-semibold text-slate-900">Detalle por día</span>
+          <span class="text-xs text-slate-400">{{ formatFecha(r.desde) }} → {{ formatFecha(r.hasta) }} · {{ r.dias.length }} {{ r.dias.length === 1 ? 'día' : 'días' }}</span>
+        </div>
         <div class="overflow-x-auto">
-          <table class="table">
+          <table class="w-full text-sm whitespace-nowrap">
             <thead>
-              <tr>
-                <th>Fecha</th>
-                <th class="text-right">Ventas</th>
-                <th class="text-right">Total ventas</th>
-                <th class="text-right">Ganancia bruta</th>
-                <th class="text-right">Compras insumos</th>
-                <th class="text-right">Costo producción</th>
-                <th class="text-right">Órdenes completadas</th>
-                <th class="text-right">Unidades producidas</th>
+              <!-- Encabezados de grupo -->
+              <tr class="text-[10px] font-bold tracking-wider uppercase">
+                <th class="bg-slate-50/60 px-4 pt-3 pb-1"></th>
+                <th colspan="3" class="border-l border-slate-200/70 bg-brand-50/30 px-4 pt-3 pb-1 text-center text-brand-600">Ventas</th>
+                <th class="border-l border-slate-200/70 bg-rose-50/30 px-4 pt-3 pb-1 text-center text-rose-600">Egresos</th>
+                <th colspan="3" class="border-l border-slate-200/70 bg-amber-50/30 px-4 pt-3 pb-1 text-center text-amber-600">Producción</th>
+              </tr>
+              <!-- Encabezados de columna -->
+              <tr class="border-b border-slate-200 text-[11px] font-semibold tracking-wider text-slate-500 uppercase">
+                <th class="bg-slate-50/60 px-4 pb-2.5 text-left">Fecha</th>
+                <th class="border-l border-slate-200/70 px-4 pb-2.5 text-right">Cant.</th>
+                <th class="px-4 pb-2.5 text-right">Total</th>
+                <th class="px-4 pb-2.5 text-right">Ganancia</th>
+                <th class="border-l border-slate-200/70 px-4 pb-2.5 text-right">Compras</th>
+                <th class="border-l border-slate-200/70 px-4 pb-2.5 text-right">Costo</th>
+                <th class="px-4 pb-2.5 text-right">Órdenes</th>
+                <th class="px-4 pb-2.5 text-right">Unidades</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody class="divide-y divide-slate-100">
               @for (d of r.dias; track d.fecha) {
-                <tr [class.opacity-40]="sinActividad(d)">
-                  <td class="font-medium text-slate-800 whitespace-nowrap">{{ formatFecha(d.fecha) }} · <span class="capitalize text-slate-400">{{ diaSemana(d.fecha) }}</span></td>
-                  <td class="text-right tabular-nums">{{ d.ventas_cantidad || '—' }}</td>
-                  <td class="text-right tabular-nums">{{ num(d.ventas_total) ? '$' + (num(d.ventas_total) | number: '1.0-2') : '—' }}</td>
-                  <td class="text-right tabular-nums" [class.text-emerald-600]="num(d.ganancia_bruta)">{{ num(d.ganancia_bruta) ? '$' + (num(d.ganancia_bruta) | number: '1.0-2') : '—' }}</td>
-                  <td class="text-right tabular-nums" [class.text-rose-600]="num(d.compras_insumos)">{{ num(d.compras_insumos) ? '$' + (num(d.compras_insumos) | number: '1.0-2') : '—' }}</td>
-                  <td class="text-right tabular-nums" [class.text-amber-600]="num(d.costo_produccion)">{{ num(d.costo_produccion) ? '$' + (num(d.costo_produccion) | number: '1.0-2') : '—' }}</td>
-                  <td class="text-right tabular-nums">{{ d.ordenes_completadas || '—' }}</td>
-                  <td class="text-right tabular-nums">{{ num(d.unidades_producidas) ? (num(d.unidades_producidas) | number: '1.0-2') : '—' }}</td>
+                <tr class="transition-colors hover:bg-slate-50/70" [class.opacity-40]="sinActividad(d)">
+                  <td class="px-4 py-2.5 font-medium text-slate-800">
+                    {{ formatFecha(d.fecha) }} <span class="ml-1 capitalize text-slate-400">{{ diaSemana(d.fecha) }}</span>
+                  </td>
+                  <td class="border-l border-slate-100 px-4 py-2.5 text-right text-slate-600 tabular-nums">{{ d.ventas_cantidad || '—' }}</td>
+                  <td class="px-4 py-2.5 text-right tabular-nums">{{ num(d.ventas_total) ? '$' + (num(d.ventas_total) | number: '1.0-2') : '—' }}</td>
+                  <td class="px-4 py-2.5 text-right tabular-nums" [class.text-emerald-600]="num(d.ganancia_bruta)">{{ num(d.ganancia_bruta) ? '$' + (num(d.ganancia_bruta) | number: '1.0-2') : '—' }}</td>
+                  <td class="border-l border-slate-100 px-4 py-2.5 text-right tabular-nums" [class.text-rose-600]="num(d.compras_insumos)">{{ num(d.compras_insumos) ? '$' + (num(d.compras_insumos) | number: '1.0-2') : '—' }}</td>
+                  <td class="border-l border-slate-100 px-4 py-2.5 text-right tabular-nums" [class.text-amber-600]="num(d.costo_produccion)">{{ num(d.costo_produccion) ? '$' + (num(d.costo_produccion) | number: '1.0-2') : '—' }}</td>
+                  <td class="px-4 py-2.5 text-right text-slate-600 tabular-nums">{{ d.ordenes_completadas || '—' }}</td>
+                  <td class="px-4 py-2.5 text-right text-slate-600 tabular-nums">{{ num(d.unidades_producidas) ? (num(d.unidades_producidas) | number: '1.0-2') : '—' }}</td>
                 </tr>
               }
             </tbody>
             <tfoot>
-              <tr class="border-t-2 border-slate-200 bg-slate-50/60 font-bold text-slate-900">
-                <td>Total</td>
-                <td class="text-right tabular-nums">{{ r.totales.ventas_cantidad }}</td>
-                <td class="text-right tabular-nums">\${{ num(r.totales.ventas_total) | number: '1.0-2' }}</td>
-                <td class="text-right tabular-nums text-emerald-600">\${{ num(r.totales.ganancia_bruta) | number: '1.0-2' }}</td>
-                <td class="text-right tabular-nums text-rose-600">\${{ num(r.totales.compras_insumos) | number: '1.0-2' }}</td>
-                <td class="text-right tabular-nums text-amber-600">\${{ num(r.totales.costo_produccion) | number: '1.0-2' }}</td>
-                <td class="text-right tabular-nums">{{ r.totales.ordenes_completadas }}</td>
-                <td class="text-right tabular-nums">{{ num(r.totales.unidades_producidas) | number: '1.0-2' }}</td>
+              <tr class="border-t-2 border-slate-200 bg-slate-50 font-bold text-slate-900">
+                <td class="px-4 py-3">Total</td>
+                <td class="border-l border-slate-200/70 px-4 py-3 text-right tabular-nums">{{ r.totales.ventas_cantidad }}</td>
+                <td class="px-4 py-3 text-right tabular-nums">\${{ num(r.totales.ventas_total) | number: '1.0-2' }}</td>
+                <td class="px-4 py-3 text-right text-emerald-600 tabular-nums">\${{ num(r.totales.ganancia_bruta) | number: '1.0-2' }}</td>
+                <td class="border-l border-slate-200/70 px-4 py-3 text-right text-rose-600 tabular-nums">\${{ num(r.totales.compras_insumos) | number: '1.0-2' }}</td>
+                <td class="border-l border-slate-200/70 px-4 py-3 text-right text-amber-600 tabular-nums">\${{ num(r.totales.costo_produccion) | number: '1.0-2' }}</td>
+                <td class="px-4 py-3 text-right tabular-nums">{{ r.totales.ordenes_completadas }}</td>
+                <td class="px-4 py-3 text-right tabular-nums">{{ num(r.totales.unidades_producidas) | number: '1.0-2' }}</td>
               </tr>
             </tfoot>
           </table>
