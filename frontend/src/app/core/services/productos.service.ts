@@ -29,6 +29,18 @@ export interface Receta {
   insumos: RecetaInsumo[];
 }
 
+export interface RecetaVersion {
+  receta_id: number;
+  codigo: string;
+  version: number;
+  vigente: boolean;
+  rendimiento_esperado: string;
+  unidad: string;
+  costo_total_esperado: string | null;
+  creado_por: string | null;
+  fecha_creacion: string;
+}
+
 export interface CrearRecetaBody {
   codigo: string;
   rendimiento_esperado: number;
@@ -96,5 +108,10 @@ export class ProductosService {
 
   crearReceta(productoId: number, body: CrearRecetaBody) {
     return this.http.post<ApiResponse<{ receta_id: number }>>(`${this.base}/${productoId}/receta`, body);
+  }
+
+  /** Historial completo de versiones de la receta de un producto. */
+  versionesReceta(productoId: number) {
+    return this.http.get<ApiResponse<RecetaVersion[]>>(`${this.base}/${productoId}/recetas`);
   }
 }

@@ -65,6 +65,7 @@ import { Paginator } from '../../shared/ui/paginator';
             <tr>
               <th>Código</th><th>Nombre</th><th>Categoría</th><th>Peso</th>
               <th class="text-right">Costo prom.</th><th class="text-right">Precio público</th>
+              <th>Receta</th>
               @if (puedeEditar()) { <th class="text-right">Acciones</th> }
             </tr>
           </thead>
@@ -82,6 +83,15 @@ import { Paginator } from '../../shared/ui/paginator';
                 <td>{{ p.pesoGramos ? (p.pesoGramos + ' g') : '—' }}</td>
                 <td class="text-right tabular-nums">{{ p.costoPromedio ? '$' + (p.costoPromedio | number: '1.2-2') : '—' }}</td>
                 <td class="text-right tabular-nums">{{ p.precioPublico ? '$' + (p.precioPublico | number: '1.2-2') : '—' }}</td>
+                <td>
+                  @if (p.recetaActiva) {
+                    <button class="badge badge-info cursor-pointer" title="Ver / editar receta" (click)="receta.set(p)">
+                      {{ p.recetaActiva.codigo }} · v{{ p.recetaActiva.version }}
+                    </button>
+                  } @else {
+                    <span class="badge badge-neutral">Sin receta</span>
+                  }
+                </td>
                 @if (puedeEditar()) {
                   <td>
                     <div class="flex justify-end gap-1">

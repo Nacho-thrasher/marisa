@@ -26,6 +26,10 @@ export async function receta(req: Request, res: Response) {
   return ok(res, await service.obtenerReceta(BigInt(req.params.id)));
 }
 
+export async function recetas(req: Request, res: Response) {
+  return ok(res, await service.listarVersionesReceta(BigInt(req.params.id)));
+}
+
 const crearSchema = z.object({
   codigo: z.string().min(1).max(50).trim(),
   nombre: z.string().min(1).max(150).trim(),

@@ -27,17 +27,57 @@ export async function listar(p: ListarParams) {
   }
 
   const [rows, total] = await Promise.all([
-    prisma.producto.findMany({ where, orderBy: { nombre: 'asc' }, skip: p.skip, take: p.limit }),
+    prisma.producto.findMany({
+      where,
+      orderBy: { nombre: 'asc' },
+      skip: p.skip,
+      take: p.limit,
+      include: {
+        recetas: {
+          where: { activa: true },
+          take: 1,
+          select: { codigo: true, version: true, costoTotalEsperado: true, rendimientoEsperado: true, unidadRendimiento: true },
+        },
+      },
+    }),
     prisma.producto.count({ where }),
   ]);
 
-  return { data: rows, total };
+  const data = rows.map(({ recetas, ...producto }) => ({
+    ...producto,
+    recetaActiva: recetas[0] ?? null,
+  }));
+
+  return { data, total };
 }
 
 export async function obtener(id: bigint) {
   const producto = await prisma.producto.findUnique({ where: { id } });
   if (!producto) throw AppError.notFound('Producto no encontrado');
   return producto;
+}
+
+export async function listarVersionesReceta(productoId: bigint) {
+  const producto = await prisma.producto.findUnique({ where: { id: productoId } });
+  if (!producto) throw AppError.notFound('Producto no encontrado');
+
+  const recetas = await prisma.receta.findMany({
+    where: { productoId },
+    orderBy: { version: 'desc' },
+    include: { creadoPor: { select: { username: true } } },
+  });
+
+  return recetas.map((r) => ({
+    receta_id: r.id,
+    codigo: r.codigo,
+    version: r.version,
+    vigente: r.activa,
+    rendimiento_esperado: r.rendimientoEsperado,
+    unidad: r.unidadRendimiento,
+    costo_total_esperado: r.costoTotalEsperado,
+    creado_por: r.creadoPor?.username ?? null,
+    fecha_creacion: r.fechaCreacion,
+  }));
 }
 
 export async function obtenerReceta(productoId: bigint) {

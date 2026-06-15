@@ -19,6 +19,13 @@ export interface Producto {
   precioComercio: string | null;
   precioPublico: string | null;
   activo: boolean;
+  recetaActiva?: {
+    codigo: string;
+    version: number;
+    costoTotalEsperado: string | null;
+    rendimientoEsperado: string;
+    unidadRendimiento: string;
+  } | null;
 }
 
 export interface InsumoRequerido {

@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, input, output, signal } from '@angular/core';
-import { DecimalPipe } from '@angular/common';
+import { DecimalPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ProductosService } from '../../core/services/productos.service';
+import { ProductosService, RecetaVersion } from '../../core/services/productos.service';
 import { InsumoService } from '../../core/services/insumo.service';
 import { InsumoListItem } from '../../core/models/insumo.model';
 import { Producto } from '../../core/services/produccion.service';
@@ -17,7 +17,7 @@ interface LineaReceta {
 
 @Component({
   selector: 'app-producto-receta-dialog',
-  imports: [DecimalPipe, FormsModule, Modal],
+  imports: [DecimalPipe, DatePipe, FormsModule, Modal],
   template: `
     <app-modal [title]="'Receta — ' + producto().nombre" [wide]="true" (closed)="closed.emit()">
       @if (loading()) {
@@ -80,6 +80,38 @@ interface LineaReceta {
           Costo estimado: <b class="text-slate-900">\${{ costoEstimado() | number: '1.0-2' }}</b>
           <span class="text-slate-400"> · por {{ form.unidad_rendimiento || 'lote' }}</span>
         </p>
+
+        @if (versiones().length > 1) {
+          <div class="mt-4 border-t border-[var(--color-line)] pt-3">
+            <button class="flex items-center gap-1 text-sm font-medium text-slate-600 hover:text-slate-900" (click)="mostrarVersiones.set(!mostrarVersiones())">
+              <span class="material-icons text-[18px]">{{ mostrarVersiones() ? 'expand_less' : 'expand_more' }}</span>
+              Versiones anteriores ({{ versiones().length }})
+            </button>
+            @if (mostrarVersiones()) {
+              <div class="mt-2 overflow-x-auto">
+                <table class="table">
+                  <thead>
+                    <tr><th>Versión</th><th>Código</th><th class="text-right">Costo total</th><th>Creado por</th><th>Fecha</th></tr>
+                  </thead>
+                  <tbody>
+                    @for (v of versiones(); track v.receta_id) {
+                      <tr>
+                        <td>
+                          v{{ v.version }}
+                          @if (v.vigente) { <span class="badge badge-ok ml-1 text-[10px]">Vigente</span> }
+                        </td>
+                        <td class="font-mono text-xs text-slate-500">{{ v.codigo }}</td>
+                        <td class="text-right tabular-nums">{{ v.costo_total_esperado ? '$' + (v.costo_total_esperado | number: '1.2-2') : '—' }}</td>
+                        <td class="text-slate-600">{{ v.creado_por || '—' }}</td>
+                        <td class="whitespace-nowrap text-slate-500">{{ v.fecha_creacion | date: 'dd/MM/yy HH:mm' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+        }
       }
 
       <div modal-footer>
@@ -105,11 +137,14 @@ export class ProductoRecetaDialog implements OnInit {
   readonly insumos = signal<InsumoListItem[]>([]);
   readonly lineas = signal<LineaReceta[]>([]);
   readonly versionVigente = signal<number | null>(null);
+  readonly versiones = signal<RecetaVersion[]>([]);
+  readonly mostrarVersiones = signal(false);
 
   form = { codigo: '', rendimiento_esperado: 1, unidad_rendimiento: 'unidades' };
 
   ngOnInit() {
     this.insumoSvc.listar({ limit: 100 }).subscribe((res) => this.insumos.set(res.data));
+    this.productosSvc.versionesReceta(this.producto().id).subscribe((res) => this.versiones.set(res.data));
 
     this.form.codigo = `REC-${this.producto().codigo}`;
 
