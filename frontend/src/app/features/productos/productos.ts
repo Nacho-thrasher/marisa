@@ -1,5 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
+import { Router } from '@angular/router';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime } from 'rxjs';
 import { ProductosService } from '../../core/services/productos.service';
@@ -11,10 +12,11 @@ import { ProductoFormDialog } from './producto-form-dialog';
 import { ProductoRecetaDialog } from './producto-receta-dialog';
 import { ProductoStockDialog } from './producto-stock-dialog';
 import { Paginator } from '../../shared/ui/paginator';
+import { Guia } from '../../shared/ui/guia';
 
 @Component({
   selector: 'app-productos',
-  imports: [DecimalPipe, ReactiveFormsModule, ProductoFormDialog, ProductoRecetaDialog, ProductoStockDialog, Paginator],
+  imports: [DecimalPipe, ReactiveFormsModule, ProductoFormDialog, ProductoRecetaDialog, ProductoStockDialog, Paginator, Guia],
   template: `
     <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
       <div>
@@ -27,6 +29,13 @@ import { Paginator } from '../../shared/ui/paginator';
         </button>
       }
     </div>
+
+    <app-guia titulo="¿Cómo funciona Productos?">
+      <p>Un <b>producto</b> es lo que vendés (ej. "Palitos x 100g"). Para poder fabricarlo necesita una <b>receta</b>.</p>
+      <p>La <b>receta</b> 🧾 es la lista de insumos que consume cada lote (con su merma). <b>No descuenta stock</b>: solo define qué se usará. El <b>costo prom.</b> sale de la receta.</p>
+      <p>El <b>stock</b> 📦 de un producto sube al <b>completar una producción</b> y baja al <b>vender</b>. El botón de stock acá es solo para la <b>carga inicial o una corrección</b> manual.</p>
+      <p>Flujo recomendado: <b>1)</b> creá los insumos en Inventario · <b>2)</b> creá el producto · <b>3)</b> cargá su receta · <b>4)</b> producí desde el botón <b>Producir</b> · <b>5)</b> vendé.</p>
+    </app-guia>
 
     <!-- Filtros -->
     <div class="card mb-4 flex flex-wrap items-center gap-3 p-3">
@@ -107,6 +116,12 @@ import { Paginator } from '../../shared/ui/paginator';
                 @if (puedeEditar()) {
                   <td>
                     <div class="flex justify-end gap-1">
+                      @if (p.activo && p.recetaActiva) {
+                        <button class="btn-icon rounded-lg bg-brand-50 text-brand-600 hover:bg-brand-100"
+                          title="Producir" (click)="producir(p)">
+                          <span class="material-icons text-[20px]">precision_manufacturing</span>
+                        </button>
+                      }
                       <button class="btn-icon rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200"
                         title="Editar" (click)="editando.set(p)">
                         <span class="material-icons text-[20px]">edit</span>
@@ -164,6 +179,7 @@ export class Productos implements OnInit {
   private auth = inject(AuthService);
   private toast = inject(ToastService);
   private confirm = inject(ConfirmService);
+  private router = inject(Router);
 
   readonly productos = signal<Producto[]>([]);
   readonly categorias = signal<string[]>([]);
@@ -269,5 +285,10 @@ export class Productos implements OnInit {
 
   stockNum(p: Producto) {
     return Number(p.stockActual ?? 0);
+  }
+
+  /** Abre Producción con este producto preseleccionado para crear una orden. */
+  producir(p: Producto) {
+    this.router.navigate(['/produccion'], { queryParams: { producir: p.id } });
   }
 }

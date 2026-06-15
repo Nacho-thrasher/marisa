@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { DecimalPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   ProduccionService,
   Producto,
@@ -16,6 +17,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../shared/ui/toast.service';
 import { Modal } from '../../shared/ui/modal';
 import { Paginator } from '../../shared/ui/paginator';
+import { Guia } from '../../shared/ui/guia';
 
 interface LineaConsumo extends InsumoRequerido {
   utilizada: number;
@@ -32,7 +34,7 @@ type FiltroEstado = '' | 'PLANIFICADA' | 'EN_PROCESO' | 'COMPLETADA';
 
 @Component({
   selector: 'app-produccion',
-  imports: [DecimalPipe, DatePipe, FormsModule, Modal, Paginator],
+  imports: [DecimalPipe, DatePipe, FormsModule, Modal, Paginator, Guia],
   template: `
     <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
       <div>
@@ -43,6 +45,13 @@ type FiltroEstado = '' | 'PLANIFICADA' | 'EN_PROCESO' | 'COMPLETADA';
         <span class="material-icons text-[20px]">add</span> Nueva orden
       </button>
     </div>
+
+    <app-guia titulo="¿Cómo funciona una producción?">
+      <p>Una <b>orden</b> fabrica un producto usando su receta. El ciclo es: <b>Planificada → En proceso → Completada</b>.</p>
+      <p>Al crear la orden, el sistema calcula los insumos necesarios (con su merma) y verifica que haya <b>stock suficiente</b>. Todavía no descuenta nada.</p>
+      <p>Al <b>completar</b> la orden cargás cuánto produjiste y el <b>consumo real</b> de cada insumo: ahí se <b>descuenta el stock de insumos</b> y se <b>suma el stock del producto</b> terminado.</p>
+      <p>La diferencia entre lo previsto y lo usado queda registrada para controlar desvíos y el costo real del lote.</p>
+    </app-guia>
 
     <!-- Filtro por estado -->
     <div class="mb-4 overflow-x-auto">
@@ -255,6 +264,13 @@ type FiltroEstado = '' | 'PLANIFICADA' | 'EN_PROCESO' | 'COMPLETADA';
                   <span class="material-icons text-[18px]">delete</span>
                 </button>
               </div>
+              @if (num(l.porcentaje_merma) > 0 && num(l.cantidad_requerida) > 0) {
+                <p class="flex items-center gap-1 text-xs text-amber-600 sm:col-span-12 sm:pl-1">
+                  <span class="material-icons text-[14px]">trending_up</span>
+                  Con {{ num(l.porcentaje_merma) }}% de merma se consumen
+                  <b>{{ conMermaReceta(l) | number: '1.0-3' }} {{ l.unidad_medida || 'u.' }}</b> por lote.
+                </p>
+              }
             </div>
           }
         </div>
@@ -353,6 +369,8 @@ export class Produccion implements OnInit {
   private insumoSvc = inject(InsumoService);
   private auth = inject(AuthService);
   private toast = inject(ToastService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
   readonly ordenes = signal<OrdenListItem[]>([]);
   readonly total = signal(0);
@@ -398,8 +416,13 @@ export class Produccion implements OnInit {
   esGerente() {
     return this.auth.hasRole('GERENTE');
   }
-  num(v: string | number) {
-    return Number(v);
+  num(v: string | number | null) {
+    return Number(v) || 0;
+  }
+
+  /** Consumo efectivo de un insumo de la receta: cantidad + merma. */
+  conMermaReceta(l: LineaReceta) {
+    return this.num(l.cantidad_requerida) * (1 + this.num(l.porcentaje_merma) / 100);
   }
   /** Fecha de hoy en hora local (YYYY-MM-DD). Evita el corrimiento de día de toISOString() (UTC). */
   private hoyISO() {
@@ -415,7 +438,17 @@ export class Produccion implements OnInit {
 
   ngOnInit() {
     this.cargar(1);
-    this.service.productos().subscribe((res) => this.productos.set(res.data));
+    this.service.productos().subscribe((res) => {
+      this.productos.set(res.data);
+      // Si venimos de "Producir" en Productos, abrimos la orden con el producto cargado.
+      const producirId = this.route.snapshot.queryParamMap.get('producir');
+      if (producirId && res.data.some((p) => String(p.id) === producirId)) {
+        this.abrirNueva();
+        this.productoId = Number(producirId);
+        this.previsualizar();
+        this.router.navigate([], { queryParams: {}, replaceUrl: true });
+      }
+    });
     this.insumoSvc.listar({ limit: 100 }).subscribe((res) => this.insumos.set(res.data));
   }
 

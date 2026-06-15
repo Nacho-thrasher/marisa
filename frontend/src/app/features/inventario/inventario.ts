@@ -10,10 +10,11 @@ import { InsumoListItem } from '../../core/models/insumo.model';
 import { MovimientoDialog } from './movimiento-dialog';
 import { InsumoFormDialog } from './insumo-form-dialog';
 import { Paginator } from '../../shared/ui/paginator';
+import { Guia } from '../../shared/ui/guia';
 
 @Component({
   selector: 'app-inventario',
-  imports: [DecimalPipe, ReactiveFormsModule, MovimientoDialog, InsumoFormDialog, Paginator],
+  imports: [DecimalPipe, ReactiveFormsModule, MovimientoDialog, InsumoFormDialog, Paginator, Guia],
   template: `
     <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
       <div>
@@ -26,6 +27,13 @@ import { Paginator } from '../../shared/ui/paginator';
         </button>
       }
     </div>
+
+    <app-guia titulo="¿Cómo funciona el inventario?">
+      <p>Acá viven tus <b>insumos</b>: materia prima, envases y servicios que se usan para fabricar productos.</p>
+      <p>El <b>stock sube</b> con un <b>Ingreso</b> ➕ (compra a proveedor) y <b>baja</b> con un <b>Egreso</b> ➖ (pérdida o corrección) o automáticamente al <b>completar una producción</b>.</p>
+      <p>Crear o editar una receta <b>no toca</b> el stock: los insumos se descuentan recién cuando producís.</p>
+      <p>Los estados <span class="badge badge-bajo">Bajo</span> y <span class="badge badge-critico">Crítico</span> avisan cuando el stock cae por debajo de los mínimos que configurás en cada insumo.</p>
+    </app-guia>
 
     <!-- Filtros -->
     <div class="card mb-4 flex flex-wrap items-center gap-3 p-3">

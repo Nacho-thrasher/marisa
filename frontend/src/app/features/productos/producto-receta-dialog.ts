@@ -88,6 +88,13 @@ interface LineaReceta {
                   <span class="material-icons text-[18px]">delete</span>
                 </button>
               </div>
+              @if (num(l.porcentaje_merma) > 0 && num(l.cantidad_requerida) > 0) {
+                <p class="flex items-center gap-1 text-xs text-amber-600 sm:col-span-12 sm:pl-1">
+                  <span class="material-icons text-[14px]">trending_up</span>
+                  Con {{ num(l.porcentaje_merma) }}% de merma se consumen
+                  <b>{{ conMerma(l) | number: '1.0-3' }} {{ l.unidad_medida || 'u.' }}</b> por lote.
+                </p>
+              }
             </div>
           }
         </div>
@@ -102,7 +109,7 @@ interface LineaReceta {
           </div>
           <div class="text-right">
             <div class="text-lg font-bold text-brand-700">\${{ costoEstimado() | number: '1.0-2' }}</div>
-            <div class="text-xs text-brand-600/70">por {{ form.unidad_rendimiento || 'lote' }}</div>
+            <div class="text-xs text-brand-600/70">incluye merma · por {{ form.unidad_rendimiento || 'lote' }}</div>
           </div>
         </div>
 
@@ -210,6 +217,15 @@ export class ProductoRecetaDialog implements OnInit {
   onInsumo(l: LineaReceta) {
     const ins = this.insumos().find((x) => x.id === l.insumo_id);
     if (ins) l.unidad_medida = ins.unidad_medida;
+  }
+
+  num(v: number | null) {
+    return Number(v) || 0;
+  }
+
+  /** Consumo efectivo de un insumo: cantidad + merma. */
+  conMerma(l: LineaReceta) {
+    return this.num(l.cantidad_requerida) * (1 + this.num(l.porcentaje_merma) / 100);
   }
 
   costoEstimado() {

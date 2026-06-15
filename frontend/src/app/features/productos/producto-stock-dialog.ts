@@ -9,12 +9,19 @@ import { Modal } from '../../shared/ui/modal';
   selector: 'app-producto-stock-dialog',
   imports: [FormsModule, Modal],
   template: `
-    <app-modal [title]="'Ajustar stock — ' + producto().nombre" (closed)="closed.emit()">
+    <app-modal [title]="'Stock de ' + producto().nombre" (closed)="closed.emit()">
+      <div class="mb-4 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50/70 px-3 py-2.5 text-sm text-amber-800">
+        <span class="material-icons text-[18px]">info</span>
+        <span>
+          Esto fija el stock de forma <b>manual</b>. Usalo para la <b>carga inicial</b> (lo que ya tenés hecho) o para
+          <b>corregir</b> un conteo físico. En el día a día el stock sube solo al <b>completar una producción</b> y baja al <b>vender</b>.
+        </span>
+      </div>
       <p class="mb-4 text-sm text-slate-500">
         Stock actual: <b class="text-slate-800">{{ producto().stockActual ?? '0' }}</b> unidades
       </p>
       <div>
-        <label class="label">Nuevo stock</label>
+        <label class="label">Fijar stock en</label>
         <input class="input" type="number" min="0" step="any" [(ngModel)]="cantidad" />
       </div>
       <div class="mt-3">
