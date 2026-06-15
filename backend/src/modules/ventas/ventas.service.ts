@@ -51,26 +51,38 @@ export async function crear(req: Request, input: CrearVentaInput) {
   const totalNeto = totalBruto.minus(descMonto);
   const numero = `REM-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}`;
 
-  const venta = await prisma.venta.create({
-    data: {
-      numeroComprobante: numero,
-      tipoComprobante: 'REMITO',
-      clienteNombre: input.cliente_nombre,
-      clienteCuit: input.cliente_cuit,
-      fechaVenta: input.fecha_venta ? new Date(input.fecha_venta) : new Date(),
-      totalBruto,
-      descuentoPorcentaje: D(descPct),
-      descuentoMonto: descMonto,
-      totalNeto,
-      medioPago: input.medio_pago,
-      listaPrecio: input.lista_precio ? (input.lista_precio as Prisma.VentaCreateInput['listaPrecio']) : undefined,
-      clienteId: input.cliente_id != null ? BigInt(input.cliente_id) : null,
-      vendedorId: input.vendedor_id != null ? BigInt(input.vendedor_id) : null,
-      registradoPorId: BigInt(req.user!.id),
-      observaciones: input.observaciones,
-      detalles: { create: detalles },
-    },
-    include: { detalles: { include: { producto: true } } },
+  const venta = await prisma.$transaction(async (tx) => {
+    const v = await tx.venta.create({
+      data: {
+        numeroComprobante: numero,
+        tipoComprobante: 'REMITO',
+        clienteNombre: input.cliente_nombre,
+        clienteCuit: input.cliente_cuit,
+        fechaVenta: input.fecha_venta ? new Date(input.fecha_venta) : new Date(),
+        totalBruto,
+        descuentoPorcentaje: D(descPct),
+        descuentoMonto: descMonto,
+        totalNeto,
+        medioPago: input.medio_pago,
+        listaPrecio: input.lista_precio ? (input.lista_precio as Prisma.VentaCreateInput['listaPrecio']) : undefined,
+        clienteId: input.cliente_id != null ? BigInt(input.cliente_id) : null,
+        vendedorId: input.vendedor_id != null ? BigInt(input.vendedor_id) : null,
+        registradoPorId: BigInt(req.user!.id),
+        observaciones: input.observaciones,
+        detalles: { create: detalles },
+      },
+      include: { detalles: { include: { producto: true } } },
+    });
+
+    for (const d of detalles) {
+      await tx.stockProducto.upsert({
+        where: { productoId: d.productoId },
+        create: { productoId: d.productoId, cantidadStock: D(0).minus(d.cantidad) },
+        update: { cantidadStock: { decrement: d.cantidad } },
+      });
+    }
+
+    return v;
   });
 
   await audit(req, { accion: 'CREAR', modulo: 'ventas', tablaAfectada: 'ventas', registroId: venta.id, valoresNuevos: { numero, total: totalNeto } });
@@ -200,13 +212,23 @@ export async function datosRemito(id: bigint) {
 }
 
 export async function anular(req: Request, id: bigint, motivo: string) {
-  const v = await prisma.venta.findUnique({ where: { id } });
+  const v = await prisma.venta.findUnique({ where: { id }, include: { detalles: true } });
   if (!v) throw AppError.notFound('Venta no encontrada');
   if (v.anulada) throw AppError.badRequest('La venta ya está anulada');
 
-  const updated = await prisma.venta.update({
-    where: { id },
-    data: { anulada: true, fechaAnulacion: new Date(), motivoAnulacion: motivo },
+  const updated = await prisma.$transaction(async (tx) => {
+    for (const d of v.detalles) {
+      await tx.stockProducto.upsert({
+        where: { productoId: d.productoId },
+        create: { productoId: d.productoId, cantidadStock: d.cantidad },
+        update: { cantidadStock: { increment: d.cantidad } },
+      });
+    }
+
+    return tx.venta.update({
+      where: { id },
+      data: { anulada: true, fechaAnulacion: new Date(), motivoAnulacion: motivo },
+    });
   });
   await audit(req, { accion: 'ANULAR', modulo: 'ventas', tablaAfectada: 'ventas', registroId: id, valoresNuevos: { motivo } });
   return { venta_id: updated.id, estado: 'ANULADA', fecha_anulacion: updated.fechaAnulacion, motivo };

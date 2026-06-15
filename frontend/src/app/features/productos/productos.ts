@@ -9,11 +9,12 @@ import { ToastService } from '../../shared/ui/toast.service';
 import { ConfirmService } from '../../shared/ui/confirm.service';
 import { ProductoFormDialog } from './producto-form-dialog';
 import { ProductoRecetaDialog } from './producto-receta-dialog';
+import { ProductoStockDialog } from './producto-stock-dialog';
 import { Paginator } from '../../shared/ui/paginator';
 
 @Component({
   selector: 'app-productos',
-  imports: [DecimalPipe, ReactiveFormsModule, ProductoFormDialog, ProductoRecetaDialog, Paginator],
+  imports: [DecimalPipe, ReactiveFormsModule, ProductoFormDialog, ProductoRecetaDialog, ProductoStockDialog, Paginator],
   template: `
     <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
       <div>
@@ -65,7 +66,7 @@ import { Paginator } from '../../shared/ui/paginator';
             <tr>
               <th>Código</th><th>Nombre</th><th>Categoría</th><th>Peso</th>
               <th class="text-right">Costo prom.</th><th class="text-right">Precio público</th>
-              <th>Receta</th>
+              <th>Receta</th><th class="text-right">Stock</th>
               @if (puedeEditar()) { <th class="text-right">Acciones</th> }
             </tr>
           </thead>
@@ -90,6 +91,17 @@ import { Paginator } from '../../shared/ui/paginator';
                     </button>
                   } @else {
                     <span class="badge badge-neutral">Sin receta</span>
+                  }
+                </td>
+                <td class="text-right tabular-nums">
+                  @if (puedeEditar()) {
+                    <button class="badge cursor-pointer" [class.badge-critico]="stockNum(p) <= 0" [class.badge-ok]="stockNum(p) > 0" title="Ajustar stock" (click)="stock.set(p)">
+                      {{ p.stockActual ?? '0' | number: '1.0-2' }}
+                    </button>
+                  } @else {
+                    <span class="badge" [class.badge-critico]="stockNum(p) <= 0" [class.badge-ok]="stockNum(p) > 0">
+                      {{ p.stockActual ?? '0' | number: '1.0-2' }}
+                    </span>
                   }
                 </td>
                 @if (puedeEditar()) {
@@ -139,6 +151,9 @@ import { Paginator } from '../../shared/ui/paginator';
     @if (receta(); as p) {
       <app-producto-receta-dialog [producto]="p" (saved)="onRecetaGuardada()" (closed)="receta.set(null)" />
     }
+    @if (stock(); as p) {
+      <app-producto-stock-dialog [producto]="p" (saved)="onStockGuardado()" (closed)="stock.set(null)" />
+    }
   `,
   styles: `
     @keyframes loading { 0% { transform: translateX(-100%);} 100% { transform: translateX(400%);} }
@@ -161,6 +176,7 @@ export class Productos implements OnInit {
   readonly mostrarNuevo = signal(false);
   readonly editando = signal<Producto | null>(null);
   readonly receta = signal<Producto | null>(null);
+  readonly stock = signal<Producto | null>(null);
 
   readonly searchCtrl = new FormControl('', { nonNullable: true });
   readonly categoriaCtrl = new FormControl('', { nonNullable: true });
@@ -244,5 +260,14 @@ export class Productos implements OnInit {
   onRecetaGuardada() {
     this.receta.set(null);
     this.cargar();
+  }
+
+  onStockGuardado() {
+    this.stock.set(null);
+    this.cargar();
+  }
+
+  stockNum(p: Producto) {
+    return Number(p.stockActual ?? 0);
   }
 }

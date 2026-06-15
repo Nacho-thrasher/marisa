@@ -214,6 +214,14 @@ export async function completar(req: Request, id: bigint, input: CompletarInput)
       },
     });
 
+    if (input.cantidad_producida > 0) {
+      await tx.stockProducto.upsert({
+        where: { productoId: orden.productoId },
+        create: { productoId: orden.productoId, cantidadStock: D(input.cantidad_producida) },
+        update: { cantidadStock: { increment: D(input.cantidad_producida) } },
+      });
+    }
+
     return { costoReal, mermaPct, movimientos };
   });
 

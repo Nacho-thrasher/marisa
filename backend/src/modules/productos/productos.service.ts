@@ -38,23 +38,26 @@ export async function listar(p: ListarParams) {
           take: 1,
           select: { codigo: true, version: true, costoTotalEsperado: true, rendimientoEsperado: true, unidadRendimiento: true },
         },
+        stock: { select: { cantidadStock: true } },
       },
     }),
     prisma.producto.count({ where }),
   ]);
 
-  const data = rows.map(({ recetas, ...producto }) => ({
+  const data = rows.map(({ recetas, stock, ...producto }) => ({
     ...producto,
     recetaActiva: recetas[0] ?? null,
+    stockActual: stock?.cantidadStock ?? D(0),
   }));
 
   return { data, total };
 }
 
 export async function obtener(id: bigint) {
-  const producto = await prisma.producto.findUnique({ where: { id } });
+  const producto = await prisma.producto.findUnique({ where: { id }, include: { stock: { select: { cantidadStock: true } } } });
   if (!producto) throw AppError.notFound('Producto no encontrado');
-  return producto;
+  const { stock, ...resto } = producto;
+  return { ...resto, stockActual: stock?.cantidadStock ?? D(0) };
 }
 
 export async function listarVersionesReceta(productoId: bigint) {
@@ -308,4 +311,30 @@ export async function crearReceta(req: Request, productoId: bigint, input: Crear
 export async function categorias() {
   const rows = await prisma.producto.groupBy({ by: ['categoria'], orderBy: { categoria: 'asc' } });
   return rows.map((r) => r.categoria);
+}
+
+/** Ajuste manual del stock de producto terminado (ej. conteo físico inicial o corrección). */
+export async function ajustarStock(req: Request, id: bigint, cantidad: number, motivo?: string) {
+  const producto = await prisma.producto.findUnique({ where: { id }, include: { stock: true } });
+  if (!producto) throw AppError.notFound('Producto no encontrado');
+
+  const anterior = producto.stock?.cantidadStock ?? D(0);
+  const nuevo = D(cantidad);
+
+  const stock = await prisma.stockProducto.upsert({
+    where: { productoId: id },
+    create: { productoId: id, cantidadStock: nuevo },
+    update: { cantidadStock: nuevo },
+  });
+
+  await audit(req, {
+    accion: 'AJUSTE_STOCK',
+    modulo: 'produccion',
+    tablaAfectada: 'stock_productos',
+    registroId: id,
+    valoresAnteriores: { cantidad_stock: anterior },
+    valoresNuevos: { cantidad_stock: nuevo, motivo },
+  });
+
+  return { producto_id: id, stock_anterior: anterior, stock_actual: stock.cantidadStock };
 }

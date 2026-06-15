@@ -224,10 +224,22 @@ model Producto {
   recetas       Receta[]
   ordenes       OrdenProduccion[]
   ventaDetalles VentaDetalle[]
+  stock         StockProducto?
 
   @@index([categoria])
   @@index([activo])
   @@map("productos")
+}
+
+model StockProducto {
+  id                 BigInt   @id @default(autoincrement())
+  productoId         BigInt   @unique @map("producto_id")
+  cantidadStock      Decimal  @default(0) @map("cantidad_stock") @db.Decimal(10, 3)
+  fechaActualizacion DateTime @updatedAt @map("fecha_actualizacion")
+
+  producto Producto @relation(fields: [productoId], references: [id])
+
+  @@map("stock_productos")
 }
 
 model Receta {

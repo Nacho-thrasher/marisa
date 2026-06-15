@@ -114,4 +114,12 @@ export class ProductosService {
   versionesReceta(productoId: number) {
     return this.http.get<ApiResponse<RecetaVersion[]>>(`${this.base}/${productoId}/recetas`);
   }
+
+  /** Ajuste manual del stock de producto terminado (conteo físico, corrección, etc.). */
+  ajustarStock(productoId: number, cantidad: number, motivo?: string) {
+    return this.http.patch<ApiResponse<{ producto_id: number; stock_anterior: string; stock_actual: string }>>(
+      `${this.base}/${productoId}/stock`,
+      { cantidad, motivo },
+    );
+  }
 }

@@ -17,3 +17,4 @@ productosRouter.get('/:id/recetas', asyncHandler(ctrl.recetas));
 productosRouter.post('/', requireRole('GERENTE'), asyncHandler(ctrl.crear));
 productosRouter.post('/:id/receta', requireRole('GERENTE'), asyncHandler(ctrl.crearReceta));
 productosRouter.patch('/:id', requireRole('GERENTE'), asyncHandler(ctrl.actualizar));
+productosRouter.patch('/:id/stock', requireRole('GERENTE'), asyncHandler(ctrl.ajustarStock));

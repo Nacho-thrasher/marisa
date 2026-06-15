@@ -87,6 +87,16 @@ export async function actualizar(req: Request, res: Response) {
   return ok(res, await service.actualizar(req, BigInt(req.params.id), input));
 }
 
+const ajustarStockSchema = z.object({
+  cantidad: z.number().nonnegative(),
+  motivo: z.string().max(200).trim().optional(),
+});
+
+export async function ajustarStock(req: Request, res: Response) {
+  const { cantidad, motivo } = ajustarStockSchema.parse(req.body);
+  return ok(res, await service.ajustarStock(req, BigInt(req.params.id), cantidad, motivo));
+}
+
 const simularSchema = z.object({
   insumos: z.array(z.object({ insumo_id: z.number().int(), cantidad: z.number().positive() })).min(1),
 });

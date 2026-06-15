@@ -328,6 +328,7 @@ export async function wipeAll() {
     prisma.movimientoInsumo.deleteMany(),
     prisma.historialPrecio.deleteMany(),
     prisma.stockActual.deleteMany(),
+    prisma.stockProducto.deleteMany(),
     prisma.resumenProduccionDiaria.deleteMany(),
     prisma.cliente.deleteMany(),
     prisma.vendedor.deleteMany(),

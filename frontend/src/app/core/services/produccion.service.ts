@@ -26,6 +26,7 @@ export interface Producto {
     rendimientoEsperado: string;
     unidadRendimiento: string;
   } | null;
+  stockActual?: string;
 }
 
 export interface InsumoRequerido {
