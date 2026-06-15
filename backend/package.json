@@ -1,6 +1,6 @@
 {
   "name": "marisa-backend",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "API REST - Sistema de Gestión de Producción y Nómina",
   "main": "dist/server.js",
   "scripts": {
