@@ -3,7 +3,7 @@ import { z } from 'zod';
 import * as service from './ventas.service.js';
 import { ok, created, paginated, buildPagination, parsePaging } from '../../utils/response.js';
 import { remitoPdf } from '../../utils/pdf.js';
-import { reporteMensualXlsx } from '../../utils/excel.js';
+import { reporteMensualXlsx, reportePeriodoXlsx } from '../../utils/excel.js';
 
 const boolParam = (v: unknown) => v === 'true' || v === true;
 
@@ -78,6 +78,22 @@ export async function reporteMensualExcel(req: Request, res: Response) {
     porVendedor: r.por_vendedor,
     matriz: r.matriz,
   });
+}
+
+const reportePeriodoSchema = z.object({
+  desde: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Formato de fecha inválido'),
+  hasta: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Formato de fecha inválido'),
+});
+
+export async function reportePeriodo(req: Request, res: Response) {
+  const { desde, hasta } = reportePeriodoSchema.parse(req.query);
+  return ok(res, await service.reportePeriodo(desde, hasta));
+}
+
+export async function reportePeriodoExcel(req: Request, res: Response) {
+  const { desde, hasta } = reportePeriodoSchema.parse(req.query);
+  const r = await service.reportePeriodo(desde, hasta);
+  await reportePeriodoXlsx(res, r);
 }
 
 export async function remito(req: Request, res: Response) {

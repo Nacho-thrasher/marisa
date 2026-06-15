@@ -52,6 +52,24 @@ export interface ReporteMensual {
   matriz: { producto: string; por_vendedor: Record<string, string>; total: string }[];
 }
 
+export interface ReportePeriodoDia {
+  fecha: string;
+  ventas_cantidad: number;
+  ventas_total: string;
+  ganancia_bruta: string;
+  compras_insumos: string;
+  costo_produccion: string;
+  ordenes_completadas: number;
+  unidades_producidas: string;
+}
+
+export interface ReportePeriodo {
+  desde: string;
+  hasta: string;
+  dias: ReportePeriodoDia[];
+  totales: Omit<ReportePeriodoDia, 'fecha'>;
+}
+
 @Injectable({ providedIn: 'root' })
 export class VentaService {
   private http = inject(HttpClient);
@@ -82,5 +100,10 @@ export class VentaService {
   reporteMensual(mes: number, ano: number) {
     const params = new HttpParams().set('mes', mes).set('ano', ano);
     return this.http.get<ApiResponse<ReporteMensual>>(`${this.api}/ventas/reporte-mensual`, { params });
+  }
+
+  reportePeriodo(desde: string, hasta: string) {
+    const params = new HttpParams().set('desde', desde).set('hasta', hasta);
+    return this.http.get<ApiResponse<ReportePeriodo>>(`${this.api}/ventas/reporte-periodo`, { params });
   }
 }

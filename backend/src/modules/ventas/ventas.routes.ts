@@ -10,6 +10,8 @@ ventasRouter.use(authenticate);
 ventasRouter.get('/resumen', asyncHandler(ctrl.resumen));
 ventasRouter.get('/reporte-mensual', asyncHandler(ctrl.reporteMensual));
 ventasRouter.get('/reporte-mensual/excel', asyncHandler(ctrl.reporteMensualExcel));
+ventasRouter.get('/reporte-periodo', asyncHandler(ctrl.reportePeriodo));
+ventasRouter.get('/reporte-periodo/excel', asyncHandler(ctrl.reportePeriodoExcel));
 ventasRouter.get('/', asyncHandler(ctrl.listar));
 ventasRouter.get('/:id/remito', asyncHandler(ctrl.remito));
 ventasRouter.get('/:id', asyncHandler(ctrl.obtener));

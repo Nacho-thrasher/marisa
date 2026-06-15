@@ -58,6 +58,76 @@ export async function reporteMensualXlsx(res: Response, d: ReporteMensualXlsx) {
   await send(res, wb, `reporte-mensual-${d.periodo.replace('/', '-')}.xlsx`);
 }
 
+interface ReportePeriodoXlsx {
+  desde: string;
+  hasta: string;
+  dias: {
+    fecha: string;
+    ventas_cantidad: number;
+    ventas_total: unknown;
+    ganancia_bruta: unknown;
+    compras_insumos: unknown;
+    costo_produccion: unknown;
+    ordenes_completadas: number;
+    unidades_producidas: unknown;
+  }[];
+  totales: {
+    ventas_cantidad: number;
+    ventas_total: unknown;
+    ganancia_bruta: unknown;
+    compras_insumos: unknown;
+    costo_produccion: unknown;
+    ordenes_completadas: number;
+    unidades_producidas: unknown;
+  };
+}
+
+export async function reportePeriodoXlsx(res: Response, d: ReportePeriodoXlsx) {
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'Marisa';
+
+  const s = wb.addWorksheet('Diario');
+  s.columns = [
+    { header: 'Fecha', key: 'fecha', width: 14 },
+    { header: 'Ventas (cant.)', key: 'vc', width: 14 },
+    { header: 'Ventas ($)', key: 'vt', width: 16 },
+    { header: 'Ganancia bruta ($)', key: 'gb', width: 18 },
+    { header: 'Compras insumos ($)', key: 'ci', width: 20 },
+    { header: 'Costo producción ($)', key: 'cp', width: 20 },
+    { header: 'Órdenes completadas', key: 'oc', width: 20 },
+    { header: 'Unidades producidas', key: 'up', width: 20 },
+  ];
+  styleHeader(s.getRow(1));
+  for (const f of d.dias) {
+    const r = s.addRow({
+      fecha: f.fecha,
+      vc: f.ventas_cantidad,
+      vt: Number(f.ventas_total),
+      gb: Number(f.ganancia_bruta),
+      ci: Number(f.compras_insumos),
+      cp: Number(f.costo_produccion),
+      oc: f.ordenes_completadas,
+      up: Number(f.unidades_producidas),
+    });
+    ['vt', 'gb', 'ci', 'cp'].forEach((k) => (r.getCell(k).numFmt = '"$"#,##0.00'));
+  }
+
+  const total = s.addRow({
+    fecha: 'TOTAL',
+    vc: d.totales.ventas_cantidad,
+    vt: Number(d.totales.ventas_total),
+    gb: Number(d.totales.ganancia_bruta),
+    ci: Number(d.totales.compras_insumos),
+    cp: Number(d.totales.costo_produccion),
+    oc: d.totales.ordenes_completadas,
+    up: Number(d.totales.unidades_producidas),
+  });
+  total.font = { bold: true };
+  ['vt', 'gb', 'ci', 'cp'].forEach((k) => (total.getCell(k).numFmt = '"$"#,##0.00'));
+
+  await send(res, wb, `reporte-diario-${d.desde}-a-${d.hasta}.xlsx`);
+}
+
 interface NominaXlsx {
   periodo: string;
   recibos: {

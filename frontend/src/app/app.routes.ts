@@ -65,6 +65,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/reportes/reportes').then((m) => m.Reportes),
       },
       {
+        path: 'reportes/diario',
+        canActivate: [roleGuard],
+        data: { roles: ['GERENTE', 'CONTADOR'] },
+        loadComponent: () => import('./features/reportes/reporte-diario').then((m) => m.ReporteDiario),
+      },
+      {
         path: 'nomina',
         canActivate: [roleGuard],
         data: { roles: ['RRHH'] },

@@ -310,3 +310,104 @@ export async function reporteMensual(mes: number, anio: number) {
     matriz: matrizArray,
   };
 }
+
+const dateKey = (d: Date) => d.toISOString().slice(0, 10);
+
+interface TotalesReporte {
+  ventas_cantidad: number;
+  ventas_total: Prisma.Decimal;
+  ganancia_bruta: Prisma.Decimal;
+  compras_insumos: Prisma.Decimal;
+  costo_produccion: Prisma.Decimal;
+  ordenes_completadas: number;
+  unidades_producidas: Prisma.Decimal;
+}
+
+interface DiaReporte extends TotalesReporte {
+  fecha: string;
+}
+
+const totalesVacios = (): TotalesReporte => ({
+  ventas_cantidad: 0,
+  ventas_total: D(0),
+  ganancia_bruta: D(0),
+  compras_insumos: D(0),
+  costo_produccion: D(0),
+  ordenes_completadas: 0,
+  unidades_producidas: D(0),
+});
+
+const diaVacio = (fecha: string): DiaReporte => ({ fecha, ...totalesVacios() });
+
+/**
+ * Reporte diario/semanal: ingresos por ventas, egresos por compras de insumos
+ * y costo de producción (consumo de insumos en órdenes completadas), día por día.
+ */
+export async function reportePeriodo(fechaInicio: string, fechaFin: string) {
+  const desde = new Date(`${fechaInicio}T00:00:00.000Z`);
+  const hasta = new Date(`${fechaFin}T23:59:59.999Z`);
+  if (Number.isNaN(desde.getTime()) || Number.isNaN(hasta.getTime()) || desde > hasta) {
+    throw AppError.badRequest('Rango de fechas inválido');
+  }
+  const cantidadDias = Math.round((hasta.getTime() - desde.getTime()) / 86400000) + 1;
+  if (cantidadDias > 60) throw AppError.badRequest('El rango no puede superar los 60 días');
+
+  const [ventas, compras, ordenes] = await Promise.all([
+    prisma.venta.findMany({
+      where: { anulada: false, fechaVenta: { gte: desde, lte: hasta } },
+      include: { detalles: true },
+    }),
+    prisma.movimientoInsumo.findMany({
+      where: { tipoMovimiento: 'ENTRADA', fechaMovimiento: { gte: desde, lte: hasta } },
+    }),
+    prisma.ordenProduccion.findMany({
+      where: { estado: 'COMPLETADA', fechaProduccion: { gte: desde, lte: hasta } },
+      include: { consumos: true },
+    }),
+  ]);
+
+  const dias = new Map<string, DiaReporte>();
+  const dia = (key: string) => dias.get(key) ?? dias.set(key, diaVacio(key)).get(key)!;
+
+  for (const v of ventas) {
+    const d = dia(dateKey(v.fechaVenta));
+    d.ventas_cantidad += 1;
+    d.ventas_total = d.ventas_total.plus(v.totalNeto);
+    for (const det of v.detalles) {
+      d.ganancia_bruta = d.ganancia_bruta.plus((det.gananciaUnitaria ?? D(0)).times(det.cantidad));
+    }
+  }
+
+  for (const m of compras) {
+    const d = dia(dateKey(m.fechaMovimiento));
+    d.compras_insumos = d.compras_insumos.plus(m.valorTotal ?? D(0));
+  }
+
+  for (const o of ordenes) {
+    const d = dia(dateKey(o.fechaProduccion));
+    d.ordenes_completadas += 1;
+    d.unidades_producidas = d.unidades_producidas.plus(o.cantidadProducida ?? D(0));
+    d.costo_produccion = o.consumos.reduce((acc, c) => acc.plus(c.costoTotal ?? D(0)), d.costo_produccion);
+  }
+
+  const lista: DiaReporte[] = [];
+  for (let t = new Date(desde); t <= hasta; t.setUTCDate(t.getUTCDate() + 1)) {
+    const key = dateKey(t);
+    lista.push(dia(key));
+  }
+
+  const totales = lista.reduce(
+    (acc, d) => ({
+      ventas_cantidad: acc.ventas_cantidad + d.ventas_cantidad,
+      ventas_total: acc.ventas_total.plus(d.ventas_total),
+      ganancia_bruta: acc.ganancia_bruta.plus(d.ganancia_bruta),
+      compras_insumos: acc.compras_insumos.plus(d.compras_insumos),
+      costo_produccion: acc.costo_produccion.plus(d.costo_produccion),
+      ordenes_completadas: acc.ordenes_completadas + d.ordenes_completadas,
+      unidades_producidas: acc.unidades_producidas.plus(d.unidades_producidas),
+    }),
+    totalesVacios(),
+  );
+
+  return { desde: fechaInicio, hasta: fechaFin, dias: lista, totales };
+}
