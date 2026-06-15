@@ -11,15 +11,22 @@ import {
 import { ToastService } from '../../shared/ui/toast.service';
 import { DescargasService } from '../../core/services/descargas.service';
 import { Modal } from '../../shared/ui/modal';
+import { Guia } from '../../shared/ui/guia';
 
 type Tab = 'liquidaciones' | 'empleados' | 'aportes';
 
 @Component({
   selector: 'app-nomina',
-  imports: [DecimalPipe, DatePipe, FormsModule, Modal],
+  imports: [DecimalPipe, DatePipe, FormsModule, Modal, Guia],
   template: `
     <h2 class="page-title">Nómina</h2>
     <p class="page-subtitle">Empleados, liquidaciones de sueldo y aportes.</p>
+
+    <app-guia titulo="¿Cómo funciona la nómina?">
+      <p><b>Empleados:</b> cada uno tiene una estructura salarial (sueldo básico y conceptos). La <b>antigüedad</b> se calcula por escala según su fecha de ingreso.</p>
+      <p><b>Liquidaciones:</b> "Procesar nómina" genera los recibos de un período aplicando haberes, antigüedad, aportes (AFIP 17%) y descuentos. De cada recibo podés bajar el <b>PDF</b> y exportar la nómina a <b>Excel</b>.</p>
+      <p><b>Aportes:</b> configurás los porcentajes y conceptos que se aplican en las liquidaciones.</p>
+    </app-guia>
 
     <!-- Tabs -->
     <div class="mb-5 overflow-x-auto">

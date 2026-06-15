@@ -4,10 +4,11 @@ import { ClientesService, Cliente, Vendedor } from '../../core/services/clientes
 import { ToastService } from '../../shared/ui/toast.service';
 import { Modal } from '../../shared/ui/modal';
 import { Paginator } from '../../shared/ui/paginator';
+import { Guia } from '../../shared/ui/guia';
 
 @Component({
   selector: 'app-clientes',
-  imports: [FormsModule, Modal, Paginator],
+  imports: [FormsModule, Modal, Paginator, Guia],
   template: `
     <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
       <div>
@@ -18,6 +19,12 @@ import { Paginator } from '../../shared/ui/paginator';
         <span class="material-icons text-[20px]">add</span> Nuevo cliente
       </button>
     </div>
+
+    <app-guia titulo="¿Cómo funciona Clientes?">
+      <p>Cada cliente tiene una <b>zona de venta</b> y una <b>lista de precios</b> asignada. Al venderle, esa lista se aplica automáticamente.</p>
+      <p>Las tarjetas de arriba resumen <b>cuántos clientes hay por zona</b> (tocá una para filtrar) — útil para ver dónde conviene salir a ofrecer.</p>
+      <p>También podés asociar un <b>vendedor</b> al cliente para que las ventas queden atribuidas en el reporte mensual.</p>
+    </app-guia>
 
     <!-- Resumen por zona: dónde hay clientes (y dónde falta ir a ofrecer) -->
     @if (porZona().length) {

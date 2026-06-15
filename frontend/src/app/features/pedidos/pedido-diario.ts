@@ -5,6 +5,7 @@ import { ProduccionService, Producto } from '../../core/services/produccion.serv
 import { ClientesService, Cliente, Vendedor, TipoLista } from '../../core/services/clientes.service';
 import { VentaService } from '../../core/services/venta.service';
 import { ToastService } from '../../shared/ui/toast.service';
+import { Guia } from '../../shared/ui/guia';
 
 interface Fila {
   producto: Producto;
@@ -13,12 +14,18 @@ interface Fila {
 
 @Component({
   selector: 'app-pedido-diario',
-  imports: [DecimalPipe, FormsModule],
+  imports: [DecimalPipe, FormsModule, Guia],
   template: `
     <div class="mb-6">
       <h2 class="page-title">Pedido diario</h2>
       <p class="text-sm text-slate-500">Cargá rápido el pedido de un vendedor, como en la planilla.</p>
     </div>
+
+    <app-guia titulo="¿Cómo funciona el pedido diario?">
+      <p>Es una forma <b>rápida</b> de cargar una venta, como la planilla por vendedor: elegís vendedor/cliente y la lista de precios, y cargás cantidades por producto.</p>
+      <p>Al confirmar se registra una <b>venta</b> común: genera remito y <b>descuenta stock</b>. Es lo mismo que "Nueva venta" pero más ágil para varios productos.</p>
+      <p>El total se calcula en vivo según la lista de precios elegida.</p>
+    </app-guia>
 
     <!-- Encabezado del pedido -->
     <div class="card mb-4 grid grid-cols-1 gap-4 p-4 sm:grid-cols-3">

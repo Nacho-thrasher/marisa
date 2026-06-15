@@ -9,6 +9,7 @@ import { ToastService } from '../../shared/ui/toast.service';
 import { ConfirmService } from '../../shared/ui/confirm.service';
 import { Modal } from '../../shared/ui/modal';
 import { Paginator } from '../../shared/ui/paginator';
+import { Guia } from '../../shared/ui/guia';
 
 interface Linea {
   producto_id: number | null;
@@ -18,7 +19,7 @@ interface Linea {
 
 @Component({
   selector: 'app-ventas',
-  imports: [DecimalPipe, DatePipe, FormsModule, Modal, Paginator],
+  imports: [DecimalPipe, DatePipe, FormsModule, Modal, Paginator, Guia],
   template: `
     <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
       <div>
@@ -29,6 +30,13 @@ interface Linea {
         <span class="material-icons text-[20px]">add</span> Nueva venta
       </button>
     </div>
+
+    <app-guia titulo="¿Cómo funciona Ventas?">
+      <p>Cada venta genera un <b>remito</b> y <b>descuenta el stock</b> de los productos vendidos. Si la anulás, el stock se <b>devuelve</b>.</p>
+      <p>Al elegir un <b>cliente</b> se aplica su <b>lista de precios</b> (mayorista, revendedor, comercio o público) y se reprecian los productos. También podés asignar un <b>vendedor</b> para el reporte mensual.</p>
+      <p>Solo podés vender lo que tengas en stock: el stock de productos sube al <b>completar una producción</b>.</p>
+      <p>Con el ícono PDF descargás el <b>remito</b> de cada venta.</p>
+    </app-guia>
 
     @if (resumen(); as r) {
       <div class="mb-4 grid gap-4 sm:grid-cols-3">

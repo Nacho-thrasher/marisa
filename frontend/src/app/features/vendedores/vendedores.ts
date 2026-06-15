@@ -3,10 +3,11 @@ import { FormsModule } from '@angular/forms';
 import { VendedoresService, VendedorItem, CrearVendedor } from '../../core/services/vendedores.service';
 import { ToastService } from '../../shared/ui/toast.service';
 import { Modal } from '../../shared/ui/modal';
+import { Guia } from '../../shared/ui/guia';
 
 @Component({
   selector: 'app-vendedores',
-  imports: [FormsModule, Modal],
+  imports: [FormsModule, Modal, Guia],
   template: `
     <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
       <div>
@@ -17,6 +18,11 @@ import { Modal } from '../../shared/ui/modal';
         <span class="material-icons text-[20px]">person_add</span> Nuevo vendedor
       </button>
     </div>
+
+    <app-guia titulo="¿Cómo funciona Vendedores?">
+      <p>Acá cargás a las personas que venden. Después podés <b>asignar un vendedor</b> a un cliente o a cada venta.</p>
+      <p>Con eso, el <b>Reporte mensual</b> muestra cuánto vendió cada uno. Si desactivás un vendedor, deja de aparecer al cargar ventas pero se conserva su historial.</p>
+    </app-guia>
 
     <div class="card overflow-hidden">
       <div class="overflow-x-auto">

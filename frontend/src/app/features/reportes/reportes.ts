@@ -3,10 +3,11 @@ import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { VentaService, ReporteMensual } from '../../core/services/venta.service';
 import { DescargasService } from '../../core/services/descargas.service';
+import { Guia } from '../../shared/ui/guia';
 
 @Component({
   selector: 'app-reportes',
-  imports: [DecimalPipe, FormsModule],
+  imports: [DecimalPipe, FormsModule, Guia],
   template: `
     <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
       <div>
@@ -23,6 +24,12 @@ import { DescargasService } from '../../core/services/descargas.service';
         </button>
       </div>
     </div>
+
+    <app-guia titulo="¿Cómo se arma este reporte?">
+      <p>Toma todas las <b>ventas vigentes</b> del mes elegido y las agrupa por <b>vendedor</b> y por <b>producto</b> (replica la planilla MENSUAL).</p>
+      <p>El <b>ranking</b> muestra cuánto facturó cada vendedor; la <b>matriz</b> de abajo cruza producto × vendedor. Las ventas <b>anuladas</b> no se cuentan.</p>
+      <p>Para el detalle día por día (con costos de producción y compras), usá <b>Reporte diario</b>.</p>
+    </app-guia>
 
     @if (rep(); as r) {
       <div class="mb-4 grid gap-4 sm:grid-cols-3">
