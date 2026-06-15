@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { DecimalPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { VentaService, VentaListItem } from '../../core/services/venta.service';
@@ -136,7 +136,22 @@ interface Linea {
             </div>
           }
         </div>
-        <p class="mt-3 text-right text-sm text-slate-600">Total estimado: <b class="text-slate-900">\${{ totalEstimado() | number: '1.0-2' }}</b></p>
+        <div class="mt-4 rounded-xl border border-[var(--color-line)] bg-slate-50 px-4 py-3 text-sm">
+          <div class="flex items-center justify-between text-slate-600">
+            <span>Subtotal</span>
+            <span class="tabular-nums">\${{ subtotalEstimado() | number: '1.0-2' }}</span>
+          </div>
+          @if (descuento > 0) {
+            <div class="mt-1 flex items-center justify-between text-rose-600">
+              <span>Descuento ({{ descuento }}%)</span>
+              <span class="tabular-nums">−\${{ descuentoMonto() | number: '1.0-2' }}</span>
+            </div>
+          }
+          <div class="mt-2 flex items-center justify-between border-t border-[var(--color-line)] pt-2 text-base font-bold text-slate-900">
+            <span>Total</span>
+            <span class="tabular-nums">\${{ totalEstimado() | number: '1.0-2' }}</span>
+          </div>
+        </div>
 
         <div modal-footer>
           <button class="btn btn-ghost" (click)="mostrarNueva.set(false)">Cancelar</button>
@@ -173,10 +188,22 @@ export class Ventas implements OnInit {
   vendedorId: number | null = null;
   listaPrecio: TipoLista = 'REVENDEDOR';
 
-  readonly totalEstimado = computed(() => {
-    const bruto = this.lineas().reduce((a, l) => a + (l.cantidad || 0) * (l.precio_unitario || 0), 0);
-    return bruto * (1 - (this.descuento || 0) / 100);
-  });
+  /**
+   * Método plano (no computed): las cantidades/precios se editan por mutación de
+   * objeto dentro del signal `lineas`, lo que NO dispara recomputo de un computed.
+   * Como la app usa zone.js, un método se reevalúa en cada ciclo de detección.
+   */
+  subtotalEstimado() {
+    return this.lineas().reduce((a, l) => a + (l.cantidad || 0) * (l.precio_unitario || 0), 0);
+  }
+
+  descuentoMonto() {
+    return this.subtotalEstimado() * ((this.descuento || 0) / 100);
+  }
+
+  totalEstimado() {
+    return this.subtotalEstimado() - this.descuentoMonto();
+  }
 
   ngOnInit() {
     this.cargar(1);

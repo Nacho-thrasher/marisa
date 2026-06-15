@@ -218,23 +218,40 @@ type FiltroEstado = '' | 'PLANIFICADA' | 'EN_PROCESO' | 'COMPLETADA';
           </div>
         </div>
 
-        <p class="mt-5 mb-2 text-sm font-semibold text-slate-700">Insumos de la receta</p>
+        <p class="mt-5 mb-1 text-sm font-semibold text-slate-700">Insumos de la receta</p>
+        <p class="mb-3 text-xs text-slate-400">Indicá cuánto de cada insumo se usa por lote. La merma es el % extra que se pierde en el proceso.</p>
+
+        <div class="hidden px-1 pb-1 text-[11px] font-semibold tracking-wider text-slate-400 uppercase sm:grid sm:grid-cols-12 sm:gap-2">
+          <div class="sm:col-span-5">Insumo</div>
+          <div class="sm:col-span-3">Cantidad</div>
+          <div class="sm:col-span-2">Unidad</div>
+          <div class="sm:col-span-1 text-center">Merma %</div>
+          <div class="sm:col-span-1"></div>
+        </div>
+
         <div class="space-y-2">
           @for (l of recetaLineas(); track $index) {
             <div class="grid grid-cols-1 gap-2 rounded-xl bg-slate-50 p-2 sm:grid-cols-12 sm:items-center sm:rounded-none sm:bg-transparent sm:p-0">
               <div class="sm:col-span-5">
+                <label class="label mb-1 sm:hidden">Insumo</label>
                 <select class="select" [(ngModel)]="l.insumo_id" (ngModelChange)="onInsumoReceta(l)">
-                  <option [ngValue]="null" disabled>Insumo…</option>
+                  <option [ngValue]="null" disabled>Elegir insumo…</option>
                   @for (ins of insumos(); track ins.id) {
                     <option [ngValue]="ins.id">{{ ins.nombre }}</option>
                   }
                 </select>
               </div>
-              <div class="flex items-center gap-2 sm:contents">
-                <input class="input min-w-0 flex-1 sm:col-span-3" type="number" min="0" step="any" placeholder="Cantidad" [(ngModel)]="l.cantidad_requerida" />
-                <div class="shrink-0 text-sm text-slate-500 sm:col-span-2">{{ l.unidad_medida || '—' }}</div>
-                <input class="input w-14 shrink-0 px-2 text-center sm:col-span-1 sm:w-full" type="number" min="0" step="any" title="Merma %" [(ngModel)]="l.porcentaje_merma" />
-                <button class="btn-ghost btn-icon shrink-0 text-rose-500 sm:col-span-1 sm:justify-self-end" (click)="quitarLineaReceta($index)">
+              <div class="flex items-end gap-2 sm:contents">
+                <div class="min-w-0 flex-1 sm:col-span-3">
+                  <label class="label mb-1 sm:hidden">Cantidad</label>
+                  <input class="input" type="number" min="0" step="any" placeholder="0" [(ngModel)]="l.cantidad_requerida" />
+                </div>
+                <div class="shrink-0 pb-2 text-sm text-slate-500 sm:col-span-2 sm:pb-0">{{ l.unidad_medida || '—' }}</div>
+                <div class="w-16 shrink-0 sm:col-span-1 sm:w-full">
+                  <label class="label mb-1 sm:hidden">Merma %</label>
+                  <input class="input px-2 text-center" type="number" min="0" step="any" placeholder="0" title="Porcentaje de merma" [(ngModel)]="l.porcentaje_merma" />
+                </div>
+                <button class="btn-ghost btn-icon mb-0.5 shrink-0 text-rose-500 sm:col-span-1 sm:mb-0 sm:justify-self-end" title="Quitar insumo" (click)="quitarLineaReceta($index)">
                   <span class="material-icons text-[18px]">delete</span>
                 </button>
               </div>
@@ -244,10 +261,17 @@ type FiltroEstado = '' | 'PLANIFICADA' | 'EN_PROCESO' | 'COMPLETADA';
         <button class="btn btn-soft mt-3" (click)="agregarLineaReceta()">
           <span class="material-icons text-[18px]">add</span> Agregar insumo
         </button>
-        <p class="mt-3 text-right text-sm text-slate-600">
-          Costo estimado: <b class="text-slate-900">\${{ costoReceta() | number: '1.0-2' }}</b>
-          <span class="text-slate-400"> · por {{ recetaForm.unidad_rendimiento || 'lote' }}</span>
-        </p>
+
+        <div class="mt-4 flex items-center justify-between rounded-xl bg-brand-50 px-4 py-3">
+          <div class="flex items-center gap-2 text-sm font-medium text-brand-700">
+            <span class="material-icons text-[20px]">payments</span>
+            Costo estimado del lote
+          </div>
+          <div class="text-right">
+            <div class="text-lg font-bold text-brand-700">\${{ costoReceta() | number: '1.0-2' }}</div>
+            <div class="text-xs text-brand-600/70">por {{ recetaForm.unidad_rendimiento || 'lote' }}</div>
+          </div>
+        </div>
 
         <div modal-footer>
           <button class="btn btn-ghost" (click)="mostrarReceta.set(false)">Cancelar</button>
@@ -354,7 +378,7 @@ export class Produccion implements OnInit {
   readonly sinReceta = signal(false);
   productoId: number | null = null;
   cantidad = 50;
-  fecha = new Date().toISOString().slice(0, 10);
+  fecha = this.hoyISO();
 
   // Receta
   readonly mostrarReceta = signal(false);
@@ -376,6 +400,14 @@ export class Produccion implements OnInit {
   }
   num(v: string | number) {
     return Number(v);
+  }
+  /** Fecha de hoy en hora local (YYYY-MM-DD). Evita el corrimiento de día de toISOString() (UTC). */
+  private hoyISO() {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
   }
   productoNombre() {
     return this.productos().find((p) => p.id === this.productoId)?.nombre ?? '';
@@ -433,7 +465,7 @@ export class Produccion implements OnInit {
   abrirNueva() {
     this.productoId = null;
     this.cantidad = 50;
-    this.fecha = new Date().toISOString().slice(0, 10);
+    this.fecha = this.hoyISO();
     this.mostrarNueva.set(true);
     this.resetPreview();
   }

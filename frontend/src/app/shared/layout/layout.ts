@@ -52,6 +52,7 @@ interface NavItem {
                   <a
                     [routerLink]="item.route"
                     routerLinkActive="!bg-brand-50 !text-brand-700"
+                    [routerLinkActiveOptions]="{ exact: true }"
                     (click)="onNavClick()"
                     class="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
                   >
@@ -198,7 +199,11 @@ export class Layout implements OnInit {
   );
   readonly pageLabel = computed(() => {
     const url = this.currentUrl();
-    const match = this.allItems.find((i) => url.startsWith(i.route));
+    // Elegir la ruta MÁS específica que matchee (la más larga), para que
+    // /reportes/diario no quede etiquetado como "Reporte mensual" (/reportes).
+    const match = this.allItems
+      .filter((i) => url.startsWith(i.route))
+      .sort((a, b) => b.route.length - a.route.length)[0];
     return match?.label ?? 'Dashboard';
   });
 

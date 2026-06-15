@@ -21,38 +21,54 @@ import { DescargasService } from '../../core/services/descargas.service';
     <div class="card mb-4 flex flex-wrap items-end gap-3 p-3">
       <div>
         <label class="label">Desde</label>
-        <input class="input" type="date" [(ngModel)]="desde" (ngModelChange)="cargar()" />
+        <input class="input" type="date" [(ngModel)]="desde" (ngModelChange)="onFechaManual()" />
       </div>
       <div>
         <label class="label">Hasta</label>
-        <input class="input" type="date" [(ngModel)]="hasta" (ngModelChange)="cargar()" />
+        <input class="input" type="date" [(ngModel)]="hasta" (ngModelChange)="onFechaManual()" />
       </div>
       <div class="flex flex-wrap gap-2">
-        <button class="btn btn-soft px-3 py-1.5 text-xs" (click)="hoy()">Hoy</button>
-        <button class="btn btn-soft px-3 py-1.5 text-xs" (click)="ayer()">Ayer</button>
-        <button class="btn btn-soft px-3 py-1.5 text-xs" (click)="estaSemana()">Esta semana</button>
-        <button class="btn btn-soft px-3 py-1.5 text-xs" (click)="semanaPasada()">Semana pasada</button>
-        <button class="btn btn-soft px-3 py-1.5 text-xs" (click)="esteMes()">Este mes</button>
+        <button class="btn px-3 py-1.5 text-xs" [class]="rango() === 'hoy' ? 'btn-primary' : 'btn-soft'" (click)="hoy()">Hoy</button>
+        <button class="btn px-3 py-1.5 text-xs" [class]="rango() === 'ayer' ? 'btn-primary' : 'btn-soft'" (click)="ayer()">Ayer</button>
+        <button class="btn px-3 py-1.5 text-xs" [class]="rango() === 'semana' ? 'btn-primary' : 'btn-soft'" (click)="estaSemana()">Esta semana</button>
+        <button class="btn px-3 py-1.5 text-xs" [class]="rango() === 'semanaPasada' ? 'btn-primary' : 'btn-soft'" (click)="semanaPasada()">Semana pasada</button>
+        <button class="btn px-3 py-1.5 text-xs" [class]="rango() === 'mes' ? 'btn-primary' : 'btn-soft'" (click)="esteMes()">Este mes</button>
       </div>
     </div>
 
     @if (rep(); as r) {
       <div class="mb-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div class="card p-4">
-          <div class="text-sm text-slate-500">Ventas ({{ r.totales.ventas_cantidad }})</div>
-          <div class="text-2xl font-bold">\${{ num(r.totales.ventas_total) | number: '1.0-0' }}</div>
+        <div class="card flex items-center gap-3 p-4">
+          <div class="icon-chip chip-brand"><span class="material-icons">point_of_sale</span></div>
+          <div>
+            <div class="text-xs text-slate-500">Total vendido</div>
+            <div class="text-2xl font-bold text-slate-900">\${{ num(r.totales.ventas_total) | number: '1.0-0' }}</div>
+            <div class="text-xs text-slate-400">{{ r.totales.ventas_cantidad }} {{ r.totales.ventas_cantidad === 1 ? 'venta' : 'ventas' }}</div>
+          </div>
         </div>
-        <div class="card p-4">
-          <div class="text-sm text-slate-500">Ganancia bruta</div>
-          <div class="text-2xl font-bold text-emerald-600">\${{ num(r.totales.ganancia_bruta) | number: '1.0-0' }}</div>
+        <div class="card flex items-center gap-3 p-4">
+          <div class="icon-chip chip-green"><span class="material-icons">trending_up</span></div>
+          <div>
+            <div class="text-xs text-slate-500">Ganancia bruta</div>
+            <div class="text-2xl font-bold text-emerald-600">\${{ num(r.totales.ganancia_bruta) | number: '1.0-0' }}</div>
+            <div class="text-xs text-slate-400">ventas − costo de productos</div>
+          </div>
         </div>
-        <div class="card p-4">
-          <div class="text-sm text-slate-500">Egresos: compras de insumos</div>
-          <div class="text-2xl font-bold text-rose-600">\${{ num(r.totales.compras_insumos) | number: '1.0-0' }}</div>
+        <div class="card flex items-center gap-3 p-4">
+          <div class="icon-chip chip-rose"><span class="material-icons">shopping_cart</span></div>
+          <div>
+            <div class="text-xs text-slate-500">Compras de insumos</div>
+            <div class="text-2xl font-bold text-rose-600">\${{ num(r.totales.compras_insumos) | number: '1.0-0' }}</div>
+            <div class="text-xs text-slate-400">egresos del período</div>
+          </div>
         </div>
-        <div class="card p-4">
-          <div class="text-sm text-slate-500">Costo de producción</div>
-          <div class="text-2xl font-bold text-amber-600">\${{ num(r.totales.costo_produccion) | number: '1.0-0' }}</div>
+        <div class="card flex items-center gap-3 p-4">
+          <div class="icon-chip chip-amber"><span class="material-icons">precision_manufacturing</span></div>
+          <div>
+            <div class="text-xs text-slate-500">Costo de producción</div>
+            <div class="text-2xl font-bold text-amber-600">\${{ num(r.totales.costo_produccion) | number: '1.0-0' }}</div>
+            <div class="text-xs text-slate-400">{{ r.totales.ordenes_completadas }} {{ r.totales.ordenes_completadas === 1 ? 'orden' : 'órdenes' }} · {{ num(r.totales.unidades_producidas) | number: '1.0-0' }} u.</div>
+          </div>
         </div>
       </div>
 
@@ -74,20 +90,20 @@ import { DescargasService } from '../../core/services/descargas.service';
             </thead>
             <tbody>
               @for (d of r.dias; track d.fecha) {
-                <tr>
-                  <td class="font-medium text-slate-800">{{ formatFecha(d.fecha) }} · <span class="capitalize text-slate-400">{{ diaSemana(d.fecha) }}</span></td>
-                  <td class="text-right tabular-nums">{{ d.ventas_cantidad }}</td>
-                  <td class="text-right tabular-nums">\${{ num(d.ventas_total) | number: '1.0-2' }}</td>
-                  <td class="text-right tabular-nums text-emerald-600">\${{ num(d.ganancia_bruta) | number: '1.0-2' }}</td>
-                  <td class="text-right tabular-nums text-rose-600">\${{ num(d.compras_insumos) | number: '1.0-2' }}</td>
-                  <td class="text-right tabular-nums text-amber-600">\${{ num(d.costo_produccion) | number: '1.0-2' }}</td>
-                  <td class="text-right tabular-nums">{{ d.ordenes_completadas }}</td>
-                  <td class="text-right tabular-nums">{{ num(d.unidades_producidas) | number: '1.0-2' }}</td>
+                <tr [class.opacity-40]="sinActividad(d)">
+                  <td class="font-medium text-slate-800 whitespace-nowrap">{{ formatFecha(d.fecha) }} · <span class="capitalize text-slate-400">{{ diaSemana(d.fecha) }}</span></td>
+                  <td class="text-right tabular-nums">{{ d.ventas_cantidad || '—' }}</td>
+                  <td class="text-right tabular-nums">{{ num(d.ventas_total) ? '$' + (num(d.ventas_total) | number: '1.0-2') : '—' }}</td>
+                  <td class="text-right tabular-nums" [class.text-emerald-600]="num(d.ganancia_bruta)">{{ num(d.ganancia_bruta) ? '$' + (num(d.ganancia_bruta) | number: '1.0-2') : '—' }}</td>
+                  <td class="text-right tabular-nums" [class.text-rose-600]="num(d.compras_insumos)">{{ num(d.compras_insumos) ? '$' + (num(d.compras_insumos) | number: '1.0-2') : '—' }}</td>
+                  <td class="text-right tabular-nums" [class.text-amber-600]="num(d.costo_produccion)">{{ num(d.costo_produccion) ? '$' + (num(d.costo_produccion) | number: '1.0-2') : '—' }}</td>
+                  <td class="text-right tabular-nums">{{ d.ordenes_completadas || '—' }}</td>
+                  <td class="text-right tabular-nums">{{ num(d.unidades_producidas) ? (num(d.unidades_producidas) | number: '1.0-2') : '—' }}</td>
                 </tr>
               }
             </tbody>
             <tfoot>
-              <tr class="font-semibold">
+              <tr class="border-t-2 border-slate-200 bg-slate-50/60 font-bold text-slate-900">
                 <td>Total</td>
                 <td class="text-right tabular-nums">{{ r.totales.ventas_cantidad }}</td>
                 <td class="text-right tabular-nums">\${{ num(r.totales.ventas_total) | number: '1.0-2' }}</td>
@@ -110,6 +126,7 @@ export class ReporteDiario implements OnInit {
 
   readonly rep = signal<ReportePeriodo | null>(null);
   readonly loading = signal(false);
+  readonly rango = signal<'hoy' | 'ayer' | 'semana' | 'semanaPasada' | 'mes' | ''>('hoy');
 
   desde = this.toISO(new Date());
   hasta = this.toISO(new Date());
@@ -130,9 +147,16 @@ export class ReporteDiario implements OnInit {
     });
   }
 
+  /** Cuando el usuario edita las fechas a mano, se deselecciona el botón de rango rápido. */
+  onFechaManual() {
+    this.rango.set('');
+    this.cargar();
+  }
+
   hoy() {
     const t = new Date();
     this.desde = this.hasta = this.toISO(t);
+    this.rango.set('hoy');
     this.cargar();
   }
 
@@ -140,6 +164,7 @@ export class ReporteDiario implements OnInit {
     const t = new Date();
     t.setDate(t.getDate() - 1);
     this.desde = this.hasta = this.toISO(t);
+    this.rango.set('ayer');
     this.cargar();
   }
 
@@ -149,6 +174,7 @@ export class ReporteDiario implements OnInit {
     lunes.setDate(t.getDate() - ((t.getDay() + 6) % 7));
     this.desde = this.toISO(lunes);
     this.hasta = this.toISO(t);
+    this.rango.set('semana');
     this.cargar();
   }
 
@@ -160,6 +186,7 @@ export class ReporteDiario implements OnInit {
     domingo.setDate(lunes.getDate() + 6);
     this.desde = this.toISO(lunes);
     this.hasta = this.toISO(domingo);
+    this.rango.set('semanaPasada');
     this.cargar();
   }
 
@@ -167,7 +194,16 @@ export class ReporteDiario implements OnInit {
     const t = new Date();
     this.desde = this.toISO(new Date(t.getFullYear(), t.getMonth(), 1));
     this.hasta = this.toISO(t);
+    this.rango.set('mes');
     this.cargar();
+  }
+
+  sinActividad(d: ReportePeriodo['dias'][number]) {
+    return (
+      !d.ventas_cantidad &&
+      !this.num(d.compras_insumos) &&
+      !this.num(d.costo_produccion)
+    );
   }
 
   exportar() {
