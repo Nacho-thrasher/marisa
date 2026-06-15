@@ -134,45 +134,83 @@ export async function seedConfiguracionRRHH() {
 }
 
 export async function seedProductosYRecetas() {
-  // Productos y listas de precios reales (del Excel del cliente).
-  // [revendedor, comercio, mayorista, publico] aproximados sobre el precio revendedor.
+  // Catálogo y listas de precios reales (Excel "LISTA MARZO 26", hoja
+  // REV-COM-MOS-MATI-FIAMB, actualizada al 11/05/26).
+  // Mapeo de columnas del Excel -> listas del sistema (de menor a mayor precio):
+  //   MATIAS -> Mayorista | REVEND -> Revendedor | COMER -> Comercio | MOSTRA -> Público
+  // (La columna FIAMBR del Excel coincide casi siempre con REVEND, así que no
+  // se usa como lista aparte: "Fiambrería" sería un cliente más con lista Revendedor.)
   const productos = [
-    { codigo: 'PAPA-45', nombre: 'Papas Fritas x 45g', categoria: 'papas_fritas', peso: 45, rev: 550 },
-    { codigo: 'PAPA-90', nombre: 'Papas Fritas x 90g', categoria: 'papas_fritas', peso: 90, rev: 950 },
-    { codigo: 'PAPA-190', nombre: 'Papas Fritas x 190g', categoria: 'papas_fritas', peso: 190, rev: 1780 },
-    { codigo: 'PAPA-500', nombre: 'Papas Fritas x 500g', categoria: 'papas_fritas', peso: 500, rev: 3700 },
-    { codigo: 'PAPA-1K', nombre: 'Papas Fritas x 1kg', categoria: 'papas_fritas', peso: 1000, rev: 7800 },
-    { codigo: 'LLUVIA-250', nombre: 'Lluvia de Papa x 250g', categoria: 'papas_fritas', peso: 250, rev: 2100 },
-    { codigo: 'LLUVIA-500', nombre: 'Lluvia de Papa x 500g', categoria: 'papas_fritas', peso: 500, rev: 3700 },
-    { codigo: 'LLUVIA-1K', nombre: 'Lluvia de Papa x 1kg', categoria: 'papas_fritas', peso: 1000, rev: 7800 },
-    { codigo: 'PALITO-100', nombre: 'Palitos Salados x 100g', categoria: 'palitos', peso: 100, rev: 450 },
-    { codigo: 'PALITO-250', nombre: 'Palitos Salados x 250g', categoria: 'palitos', peso: 250, rev: 980 },
-    { codigo: 'PALITO-500', nombre: 'Palitos Salados x 500g', categoria: 'palitos', peso: 500, rev: 1650 },
-    { codigo: 'PALITO-1K', nombre: 'Palitos Salados x 1kg', categoria: 'palitos', peso: 1000, rev: 3500 },
-    { codigo: 'MANI-90', nombre: 'Maní Salados x 90g', categoria: 'mani', peso: 90, rev: 550 },
-    { codigo: 'PREPIZZA-C', nombre: 'PrePizza común', categoria: 'panificados', peso: null, rev: 800 },
+    { codigo: 'PAPA-45', nombre: 'Papas Fritas x 45g', categoria: 'papas_fritas', peso: 45, mayo: 590, rev: 600, com: 800, pub: 1500 },
+    { codigo: 'PAPA-90', nombre: 'Papas Fritas x 90g', categoria: 'papas_fritas', peso: 90, mayo: 1010, rev: 1050, com: 1200, pub: 2000 },
+    { codigo: 'PAPA-190', nombre: 'Papas Fritas x 190g', categoria: 'papas_fritas', peso: 190, mayo: 1770, rev: 1960, com: 2500, pub: 3500 },
+    { codigo: 'PAPA-500', nombre: 'Papas Fritas x 500g', categoria: 'papas_fritas', peso: 500, mayo: 3650, rev: 4100, com: 4800, pub: 5500 },
+    { codigo: 'PAPA-1K', nombre: 'Papas Fritas x 1kg', categoria: 'papas_fritas', peso: 1000, mayo: 8050, rev: 8600, com: 9000, pub: 10000 },
+    { codigo: 'LLUVIA-150', nombre: 'Lluvia de Papa x 150g', categoria: 'papas_fritas', peso: 150, mayo: 1450, rev: 1400, com: 1600, pub: 2500 },
+    { codigo: 'LLUVIA-250', nombre: 'Lluvia de Papa x 250g', categoria: 'papas_fritas', peso: 250, mayo: 2300, rev: 2300, com: 3000, pub: 3500 },
+    { codigo: 'LLUVIA-500', nombre: 'Lluvia de Papa x 500g', categoria: 'papas_fritas', peso: 500, mayo: 3650, rev: 4100, com: 4800, pub: 5500 },
+    { codigo: 'LLUVIA-1K', nombre: 'Lluvia de Papa x 1kg', categoria: 'papas_fritas', peso: 1000, mayo: 8050, rev: 8600, com: 9000, pub: 10000 },
+    { codigo: 'PALITO-100', nombre: 'Palitos Salados x 100g', categoria: 'palitos', peso: 100, mayo: 470, rev: 500, com: 800, pub: 1500 },
+    { codigo: 'PALITO-250', nombre: 'Palitos Salados x 250g', categoria: 'palitos', peso: 250, mayo: 1060, rev: 1100, com: 1300, pub: 2500 },
+    { codigo: 'PALITO-500', nombre: 'Palitos Salados x 500g', categoria: 'palitos', peso: 500, mayo: 1770, rev: 1800, com: 2500, pub: 3500 },
+    { codigo: 'PALITO-1K', nombre: 'Palitos Salados x 1kg', categoria: 'palitos', peso: 1000, mayo: 3800, rev: 3900, com: 4500, pub: 5500 },
+    { codigo: 'MANI-90', nombre: 'Maní Salados x 90g', categoria: 'mani', peso: 90, mayo: 650, rev: 660, com: 900, pub: 1500 },
+    { codigo: 'MANI-190', nombre: 'Maní Salados x 190g', categoria: 'mani', peso: 190, mayo: 1180, rev: 1200, com: 1400, pub: 2500 },
+    { codigo: 'MANI-500', nombre: 'Maní Salados x 500g', categoria: 'mani', peso: 500, mayo: 2600, rev: 2600, com: 3000, pub: 4000 },
+    { codigo: 'MANI-1K', nombre: 'Maní Salados x 1kg', categoria: 'mani', peso: 1000, mayo: 4700, rev: 4800, com: 5400, pub: 6000 },
+    { codigo: 'CHIZITO-150', nombre: 'Chizitos x 150g', categoria: 'snacks', peso: 150, mayo: 1000, rev: 1050, com: 1400, pub: 2500 },
+    { codigo: 'CHIZITO-300', nombre: 'Chizitos x 300g', categoria: 'snacks', peso: 300, mayo: 2000, rev: 2100, com: 2800, pub: 4000 },
+    { codigo: 'PUFLITO-150', nombre: 'Puflitos x 150g', categoria: 'snacks', peso: 150, mayo: 1000, rev: 1050, com: 1400, pub: 2500 },
+    { codigo: 'PUFLITO-300', nombre: 'Puflitos x 300g', categoria: 'snacks', peso: 300, mayo: 2000, rev: 2100, com: 2800, pub: 4000 },
+    { codigo: 'CHIZO-PUFLO-1K', nombre: 'Chizo - Puflo x Kg', categoria: 'snacks', peso: 1000, mayo: 5200, rev: 6100, com: 9000, pub: 10000 },
+    { codigo: 'PREPIZZA-ESP', nombre: 'Pizza Especial x 300g', categoria: 'panificados', peso: 300, mayo: 880, rev: 950, com: 1200, pub: 1500 },
+    { codigo: 'PREPIZZA-C', nombre: 'Pizza Común x 200g', categoria: 'panificados', peso: 200, mayo: 650, rev: 660, com: 900, pub: 1200 },
+    { codigo: 'PAN-VIENA-6', nombre: 'Pan de Viena x 6 u', categoria: 'panificados', peso: null, mayo: 760, rev: 800, com: 1100, pub: 1400 },
+    { codigo: 'PAN-HAMB-6', nombre: 'Pan de Hamburguesa x 6 u', categoria: 'panificados', peso: null, mayo: 900, rev: 970, com: 1200, pub: 1500 },
+    { codigo: 'PAN-PATY-4', nombre: 'Pan de Paty x 4 u', categoria: 'panificados', peso: null, mayo: 760, rev: 800, com: 1100, pub: 1400 },
+    // ⚠ Mayorista estimado en 920: el Excel trae 2900 en esta celda, que
+    // parece un copy-paste del valor de "Pan de Hamburguesa x 20" (fila 35).
+    // Se usa la misma proporción Mayorista/Revendedor (~0,97) que el Mix
+    // Cervecero x190.
+    { codigo: 'MIX-CERV-90', nombre: 'Mix Cervecero x 90g', categoria: 'snacks', peso: 90, mayo: 920, rev: 950, com: 1200, pub: 2000 },
+    { codigo: 'MIX-CERV-190', nombre: 'Mix Cervecero x 190g', categoria: 'snacks', peso: 190, mayo: 1650, rev: 1700, com: 2000, pub: 3000 },
+    // ⚠ Revendedor/Comercio/Mayorista estimados: el Excel solo trae el precio
+    // Mostrador (5500) para esta presentación. Se estimaron con la misma
+    // proporción que el Mix Cervecero x190 respecto de su Mostrador.
+    { codigo: 'MIX-CERV-500', nombre: 'Mix Cervecero x 500g', categoria: 'snacks', peso: 500, mayo: 3000, rev: 3100, com: 3700, pub: 5500 },
+    // ⚠ Comercio/Mayorista estimados: el Excel solo trae Revendedor (15800) y
+    // Mostrador (17000). Se usa el precio Revendedor también para Comercio y
+    // Mayorista (combo pensado para venta a revendedores).
+    { codigo: 'BOLSON-1-GRANDE', nombre: 'Bolsón I Grande', categoria: 'combos', peso: null, mayo: 15800, rev: 15800, com: 15800, pub: 17000 },
+    // ⚠ Comercio/Mayorista estimados con el mismo criterio que el Bolsón I
+    // (el Excel solo trae Revendedor 7960 y Mostrador 12000).
+    { codigo: 'BOLSON-2-CHICO', nombre: 'Bolsón II Chico', categoria: 'combos', peso: null, mayo: 7960, rev: 7960, com: 7960, pub: 12000 },
+    // ⚠ Revendedor/Comercio/Mostrador estimados: el Excel solo trae Mayorista
+    // (2900) para esta presentación. Se escala el precio de "Pan de
+    // Hamburguesa x 6" con el mismo factor (~3,2) que separa los 2900 de los
+    // 900 de Mayorista x6.
+    { codigo: 'PAN-HAMB-20', nombre: 'Pan de Hamburguesa x 20 u', categoria: 'panificados', peso: null, mayo: 2900, rev: 3100, com: 3850, pub: 4800 },
   ];
   for (const p of productos) {
-    const rev = p.rev;
     await prisma.producto.upsert({
       where: { codigo: p.codigo },
       update: {
-        precioVenta: D(rev),
-        precioRevendedor: D(rev),
-        precioMayorista: D(Math.round(rev * 0.9)),
-        precioComercio: D(Math.round(rev * 1.1)),
-        precioPublico: D(Math.round(rev * 1.25)),
+        precioVenta: D(p.rev),
+        precioRevendedor: D(p.rev),
+        precioMayorista: D(p.mayo),
+        precioComercio: D(p.com),
+        precioPublico: D(p.pub),
       },
       create: {
         codigo: p.codigo,
         nombre: p.nombre,
         categoria: p.categoria,
         pesoGramos: p.peso ?? undefined,
-        precioVenta: D(rev),
-        precioRevendedor: D(rev),
-        precioMayorista: D(Math.round(rev * 0.9)),
-        precioComercio: D(Math.round(rev * 1.1)),
-        precioPublico: D(Math.round(rev * 1.25)),
+        precioVenta: D(p.rev),
+        precioRevendedor: D(p.rev),
+        precioMayorista: D(p.mayo),
+        precioComercio: D(p.com),
+        precioPublico: D(p.pub),
       },
     });
   }
