@@ -13,6 +13,8 @@
     "seed": "tsx prisma/seed.ts",
     "seed:reset": "tsx prisma/seed.prod.ts",
     "seed:reset:prod": "node dist/prisma/seed.prod.js",
+    "reset:datos": "tsx prisma/reset-datos.ts",
+    "reset:datos:prod": "node dist/prisma/reset-datos.js",
     "postinstall": "prisma generate"
   },
   "prisma": {

@@ -343,3 +343,43 @@ export async function wipeAll() {
   ]);
   console.log('✓ base de datos vaciada');
 }
+
+/**
+ * Borra solo los DATOS OPERATIVOS y deja la base lista para cargar de cero.
+ *
+ * CONSERVA: usuarios (para seguir logueándote), el sistema de permisos
+ *   (permisos / rol-permiso) y la configuración de RRHH (aportes y escalas de
+ *   antigüedad), porque la app las necesita y no hay UI para recrearlas.
+ *
+ * BORRA: insumos, stock, movimientos, historial de precios, productos, recetas,
+ *   órdenes de producción y consumos, ventas, clientes, vendedores, empleados,
+ *   liquidaciones/recibos/asistencias, estructura salarial y su historial,
+ *   resumen de producción y todos los logs de auditoría.
+ */
+export async function wipeDatosOperativos() {
+  await prisma.$transaction([
+    prisma.auditoriaLog.deleteMany(),
+    prisma.consumoInsumo.deleteMany(),
+    prisma.ventaDetalle.deleteMany(),
+    prisma.venta.deleteMany(),
+    prisma.reciboSueldo.deleteMany(),
+    prisma.nominaMensual.deleteMany(),
+    prisma.asistencia.deleteMany(),
+    prisma.historialEstructuraSalarial.deleteMany(),
+    prisma.estructuraSalarial.deleteMany(),
+    prisma.ordenProduccion.deleteMany(),
+    prisma.recetaDetalle.deleteMany(),
+    prisma.receta.deleteMany(),
+    prisma.movimientoInsumo.deleteMany(),
+    prisma.historialPrecio.deleteMany(),
+    prisma.stockActual.deleteMany(),
+    prisma.stockProducto.deleteMany(),
+    prisma.resumenProduccionDiaria.deleteMany(),
+    prisma.cliente.deleteMany(),
+    prisma.vendedor.deleteMany(),
+    prisma.empleado.deleteMany(),
+    prisma.producto.deleteMany(),
+    prisma.insumo.deleteMany(),
+  ]);
+  console.log('✓ datos operativos borrados (se conservaron usuarios, permisos y config de RRHH)');
+}
